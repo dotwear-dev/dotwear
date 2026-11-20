@@ -3,6 +3,8 @@
 #   - タグ v<版番号> を push：本番の公開。タグとリポジトリ直下の package.json の version が一致しないと止める
 # 本番に必要な secrets（各アカウントを用意してから設定する）：
 #   （npm はトークンを使わない。npm 側で Trusted Publishing に dotwear-dev/dotwear の release.yml を登録してある。ADR-031）
+#   （pub.dev もトークンを使わない。pub.dev の各パッケージの Admin で、GitHub Actions からの公開（dotwear-dev/dotwear、タグ v{{version}}、
+#     Environment pub.dev）を有効にしてある。公開の承認は GitHub の Environment「pub.dev」の承認者が行う。ADR-034）
 #   （Maven Central への公開は保留中。ADR-022。再開するときは、リポジトリの変数 PUBLISH_MAVEN を true にして次を設定する）
 #   MAVEN_CENTRAL_USERNAME / MAVEN_CENTRAL_PASSWORD  Maven Central（Central Portal）のトークン
 #   SIGNING_IN_MEMORY_KEY / SIGNING_IN_MEMORY_KEY_PASSWORD  Maven の成果物に署名する GPG の鍵
@@ -66,12 +68,24 @@ jobs:
       - run: npm install -g npm@12
       - name: Stage on npm
         run: |
-          # pnpm pack で workspace:* を実際の版番号に置き換えてから、できた tarball を候補として置く
+          # pnpm pack で workspace:* を実際の版番号に置き換えてから、できた tarball を候補として置く。
+          # その版がもう npm にあるパッケージは飛ばす（新しいパッケージの最初の版は、メンテナーが手元から公開するため。ADR-034）
           out="$RUNNER_TEMP/npm-packages"
-          for pkg in icons web; do (cd "packages/$pkg" && pnpm pack --pack-destination "$out"); done
+          version="${{ needs.version.outputs.version }}"
+          for pkg in icons web react-native-icons react-native; do
+            name=$(node -p "require('./packages/$pkg/package.json').name")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version はもう公開されているので飛ばします"
+              continue
+            fi
+            (cd "packages/$pkg" && pnpm pack --pack-destination "$out")
+          done
           flags="--access public --provenance"
           if [ "$DRY_RUN" = "true" ]; then flags="$flags --dry-run"; fi
-          for tgz in "$out"/*.tgz; do npm stage publish "$tgz" $flags; done
+          for tgz in "$out"/*.tgz; do
+            [ -e "$tgz" ] || continue
+            npm stage publish "$tgz" $flags
+          done
 
   maven:
     needs: version
@@ -105,6 +119,67 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
+
+  # Flutter（pub.dev）。テストと公開の試し（dry-run）は毎回行う。ADR-033・ADR-034
+  pub:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:flutter
+      # 生成物（アイコン・トークン・フォント）とライセンス文をパッケージに置いてから、公開できる状態かを確かめる
+      - run: pnpm --filter @dotwear/flutter run prepare-pub
+      - name: Dry-run
+        working-directory: packages/flutter
+        run: |
+          for pkg in dotwear_icons dotwear; do (cd "$pkg" && flutter pub publish --dry-run); done
+
+  # 本番の公開。GitHub の Environment「pub.dev」に承認者を設定してあり、承認するまで動かない
+  # （npm の段階公開と同じく、乗っ取られた CI だけでは公開できないようにする。ADR-031・ADR-034）
+  pub-publish:
+    needs: [version, pub]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      contents: read
+      id-token: write # pub.dev の自動公開の認証（OIDC）に使う
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      # setup-dart が pub.dev の OIDC の認証を設定し、flutter pub publish もそれを使う
+      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @dotwear/flutter run prepare-pub
+      - name: Publish to pub.dev
+        working-directory: packages/flutter
+        run: |
+          version="${{ needs.version.outputs.version }}"
+          # dotwear は dotwear_icons に依存するので、アイコンから順に出す。
+          # その版がもう pub.dev にあるパッケージは飛ばす（最初の版はメンテナーが手元から公開するため）
+          for pkg in dotwear_icons dotwear; do
+            if curl -sf "https://pub.dev/api/packages/$pkg/versions/$version" >/dev/null; then
+              echo "$pkg $version はもう公開されているので飛ばします"
+              continue
+            fi
+            (cd "$pkg" && flutter pub publish --force)
+          done
 
   swift:
     needs: version
@@ -142,11 +217,12 @@ jobs:
           git tag "$version"
           git push origin HEAD --tags
 
-  # GitHub の Releases に載せる（npm への候補の配置と Swift の公開が両方済んでから。片方でも失敗したら作らない）。
+  # GitHub の Releases に載せる（npm への候補の配置、Swift の公開、pub.dev の検査が済んでから。どれかが失敗したら作らない）。
+  # pub.dev の本番の公開は承認待ちになるので待たない（承認すれば Release の案内どおりに入れられる）。
   # npm は段階公開なので、Release ができた時点では npm の承認待ちのことがある。承認すれば Release の案内どおりに入れられる。
   # 本文は docs/releases/v<版番号>.md（利用者向けに英語で書く）。なければ前のタグからのコミットの一覧だけになる
   github-release:
-    needs: [version, npm, swift]
+    needs: [version, npm, swift, pub]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:

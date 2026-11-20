@@ -2,12 +2,12 @@
 // 入れ方と最小の例。コード例は src/lib/snippets.ts でコンパイル済みのソースから取り出す
 import CodeTabs from "../components/CodeTabs.astro";
 import Base from "../layouts/Base.astro";
-import { swift, web } from "../lib/snippets";
+import { flutter, reactNative, swift, web } from "../lib/snippets";
 
 const SWIFT_REPO = "https://github.com/dotwear-dev/dotwear-swift";
 ---
 
-<Base title="Installation" description="Install Dotwear for React or SwiftUI and render your first icon.">
+<Base title="Installation" description="Install Dotwear for React, SwiftUI, React Native or Flutter and render your first icon.">
   <article class="prose">
     <h1>Installation</h1>
 
@@ -22,9 +22,23 @@ const SWIFT_REPO = "https://github.com/dotwear-dev/dotwear-swift";
           note: `In Xcode: File › Add Package Dependencies…, enter ${SWIFT_REPO}, and add the Dotwear library (or DotwearIcons for icons only). With Package.swift:`,
           code: `dependencies: [\n    .package(url: "${SWIFT_REPO}", from: "0.1.0"),\n],\ntargets: [\n    .target(name: "MyApp", dependencies: [\n        .product(name: "Dotwear", package: "dotwear-swift"),\n    ]),\n]`,
         },
+        {
+          platform: "react-native",
+          lang: "sh",
+          code: "npm install @dotwear/react-native\n\n# Icons only\nnpm install @dotwear/react-native-icons",
+        },
+        {
+          platform: "flutter",
+          lang: "sh",
+          code: "flutter pub add dotwear material_ui\n\n# Icons only\nflutter pub add dotwear_icons",
+        },
       ]}
     />
-    <p>Requirements: React 18 or later for the web; iOS 16 / macOS 13 or later and Swift 6 for SwiftUI.</p>
+    <p>
+      Requirements: React 18 or later for the web; iOS 16 / macOS 13 or later and Swift 6 for SwiftUI; React 19 and React
+      Native 0.78 or later for React Native; Flutter 3.47 (Dart 3.13) or later with <code>material_ui</code> for Flutter. The React Native packages draw with plain views, so they need no native
+      modules.
+    </p>
 
     <h2>2. Use it</h2>
     <CodeTabs
@@ -32,6 +46,8 @@ const SWIFT_REPO = "https://github.com/dotwear-dev/dotwear-swift";
       items={[
         { platform: "web", code: web("quickstart") },
         { platform: "swift", code: swift("quickstart") },
+        { platform: "react-native", code: reactNative("quickstart") },
+        { platform: "flutter", code: flutter("quickstart") },
       ]}
     />
     <ul>
@@ -44,6 +60,18 @@ const SWIFT_REPO = "https://github.com/dotwear-dev/dotwear-swift";
       <li>
         <strong>iOS:</strong> <code>import Dotwear</code> also gives you the icons. <code>.dotwearTheme()</code> at the
         root is optional — without it, the default theme is used.
+      </li>
+      <li>
+        <strong>React Native:</strong> <code>@dotwear/react-native</code> also gives you the icons. Load the bundled
+        DotGothic16 font once (<code>useFonts(dotwearFonts)</code> with Expo). With the React Native CLI, link
+        <code>node_modules/@dotwear/react-native/dist/generated/fonts</code> with <code>npx react-native-asset</code>
+        instead. <code>&lt;DotwearTheme&gt;</code> at the root is optional.
+      </li>
+      <li>
+        <strong>Flutter:</strong> <code>package:dotwear/dotwear.dart</code> also gives you the icons, and the font is
+        bundled. <code>DotwearThemeData().toThemeData()</code> sets the colors, the font and the icon color; without
+        it, components use the default theme. Dotwear is built on <code>material_ui</code>, the Material library for
+        Flutter 3.47 and later.
       </li>
     </ul>
 

@@ -33,3 +33,16 @@ export function swiftName(name: string): string {
 export function kotlinName(name: string): string {
   return name.split("-").map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join("");
 }
+
+// Dart の予約語（識別子に使えない語）。アイコン名やパレット名がこれと同じになったら、Material の Icons.class_ と同じく末尾に _ を付ける
+const DART_KEYWORDS = new Set([
+  "assert", "break", "case", "catch", "class", "const", "continue", "default", "do", "else", "enum", "extends",
+  "false", "final", "finally", "for", "if", "in", "is", "new", "null", "rethrow", "return", "super", "switch",
+  "this", "throw", "true", "try", "var", "void", "while", "with", "await", "yield",
+]);
+
+/** "arrow-left" → "arrowLeft"（Dart の static フィールド名。`DotwearIcon(DotwearIcons.arrowLeft)` と書く） */
+export function dartName(name: string): string {
+  const camel = name.split("-").map((s, i) => (i === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1))).join("");
+  return DART_KEYWORDS.has(camel) ? `${camel}_` : camel;
+}

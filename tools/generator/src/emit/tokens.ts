@@ -6,6 +6,10 @@
 //     DotwearTokens.swift   DotwearTokens.Color.primary など
 //   Kotlin（packages/android/compose/src/generated/kotlin/dev/dotwear/compose/）
 //     DotwearTokens.kt      DotwearTokens.Color.Primary など
+//   React Native（packages/react-native/generated/）
+//     tokens.ts   tokens.color.primary など。長さは単位なしの dp（ADR-032）
+//   Flutter（packages/flutter/dotwear/lib/src/generated/）
+//     dotwear_tokens.g.dart   DotwearTokens.colorPrimary など。長さは論理ピクセルかドット数の int（ADR-033）
 // 変換は Style Dictionary に任せ、プラットフォームごとに platform を足す（Kotlin は Phase 3）。
 //
 // パレット（palette.json）はアイコンのパッケージに入れる（ADR-009）ので、ここでは扱わない。
@@ -14,7 +18,7 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import StyleDictionary, { type TransformedToken } from "style-dictionary";
-import { kotlinName, swiftName } from "./naming.js";
+import { dartName, kotlinName, swiftName } from "./naming.js";
 import { GENERATED_HEADER } from "./svg.js";
 
 /** Web 用に出力するトークンのファイル（palette.json は除く） */
@@ -39,6 +43,8 @@ function createDictionary(root: string): StyleDictionary {
         "dotwear/typescript": ({ dictionary }) => renderTypeScript(dictionary.allTokens),
         "dotwear/swift": ({ dictionary }) => renderSwift(dictionary.allTokens),
         "dotwear/kotlin": ({ dictionary }) => renderKotlin(dictionary.allTokens),
+        "dotwear/react-native": ({ dictionary }) => renderReactNative(dictionary.allTokens),
+        "dotwear/dart": ({ dictionary }) => renderDart(dictionary.allTokens),
       },
     },
     platforms: {
@@ -60,6 +66,14 @@ function createDictionary(root: string): StyleDictionary {
       kotlin: {
         // Swift と同じく変換をかけず、renderKotlin で Compose の型にする
         files: [{ destination: "DotwearTokens.kt", format: "dotwear/kotlin" }],
+      },
+      "react-native": {
+        // Swift と同じく変換をかけず、renderReactNative で React Native の StyleSheet に渡せる値にする
+        files: [{ destination: "tokens.ts", format: "dotwear/react-native" }],
+      },
+      dart: {
+        // Swift と同じく変換をかけず、renderDart で Flutter の型にする
+        files: [{ destination: "dotwear_tokens.g.dart", format: "dotwear/dart" }],
       },
     },
   });
@@ -90,6 +104,16 @@ async function writePlatform(sd: StyleDictionary, platform: string, outDir: stri
       return writeFile(path.join(outDir, destination), output);
     }),
   );
+}
+
+/** React Native の tokens.ts を出す（outDir は packages/react-native/generated） */
+export async function emitReactNativeTokens({ root, outDir }: EmitTokensOptions): Promise<void> {
+  await writePlatform(createDictionary(root), "react-native", outDir);
+}
+
+/** Flutter の dotwear_tokens.g.dart を出す（outDir は packages/flutter/dotwear/lib/src/generated） */
+export async function emitDartTokens({ root, outDir }: EmitTokensOptions): Promise<void> {
+  await writePlatform(createDictionary(root), "dart", outDir);
 }
 
 // tokens.color.bg のように、元データと同じ入れ子で値を引けるようにする。
@@ -227,6 +251,51 @@ function kotlinValue(t: TransformedToken): string {
   }
 }
 
+// React Native では Web と同じ入れ子（tokens.color.onPrimary）にし、値を StyleSheet にそのまま渡せる形にする。
+//   color      → "#rrggbb"
+//   dimension  → number（px をそのまま dp として扱う。整数ピクセルへの変換は使う側で dotwearCellPx を通す。ADR-019）
+//   number     → number（ドット数）
+//   fontFamily → 最初の 1 つの名前だけ（React Native の fontFamily は代わりの書体の並びを受け付けないため）
+function renderReactNative(tokens: TransformedToken[]): string {
+  const values: Tree = {};
+  for (const t of tokens) setIn(values, t.path.map(camelCase), reactNativeValue(t));
+  return [
+    `// ${GENERATED_HEADER}`,
+    "",
+    "/** デザイントークンの値（tokens/*.json）。長さは dp、number はドット数。実寸は useDotwear().dots(n) で整数ピクセルにそろえる */",
+    `export const tokens = ${JSON.stringify(values, null, 2)} as const;`,
+    "",
+    "export type DotwearTokens = typeof tokens;",
+    "",
+  ].join("\n");
+}
+
+function reactNativeValue(t: TransformedToken): Leaf {
+  const v = t.$value as unknown;
+  switch (t.$type) {
+    case "color": {
+      const hex = String(v);
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) throw new Error(`React Native には #RRGGBB の色だけを出せます: ${t.name} = ${hex}`);
+      return hex.toLowerCase();
+    }
+    case "dimension": {
+      const d = v as { value: number; unit: string };
+      if (d.unit !== "px" || !Number.isInteger(d.value)) throw new Error(`React Native には整数の px の長さだけを出せます: ${t.name}`);
+      return d.value;
+    }
+    case "number":
+      if (!Number.isInteger(v)) throw new Error(`number のトークンは整数（ドット数）にしてください: ${t.name}`);
+      return v as number;
+    case "fontFamily": {
+      const first = (Array.isArray(v) ? v : [v])[0];
+      if (typeof first !== "string") throw new Error(`fontFamily が空です: ${t.name}`);
+      return first;
+    }
+    default:
+      throw new Error(`React Native に出せない型のトークンです: ${t.name}（${String(t.$type)}）`);
+  }
+}
+
 type Leaf = string | number;
 interface Tree {
   [key: string]: Leaf | Tree;
@@ -244,4 +313,49 @@ function setIn(tree: Tree, keys: string[], value: Leaf): void {
 
 function camelCase(s: string): string {
   return s.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+}
+
+// Dart には入れ子の static がないので、グループ名を前に付けた 1 段の名前にする（color.on-primary → colorOnPrimary）
+function renderDart(tokens: TransformedToken[]): string {
+  const lines = tokens.flatMap((t) => {
+    const name = dartName(t.path.join("-"));
+    const doc = t.$description ? [`  /// ${t.$description}`] : [];
+    return [...doc, `  static const ${name}${dartValue(t)};`];
+  });
+  return [
+    `// ${GENERATED_HEADER}`,
+    "import 'dart:ui' show Color;",
+    "",
+    "/// デザイントークンの値（tokens フォルダの JSON）。長さの int はドット数か論理ピクセルで、実寸は DotwearThemeData で整数ピクセルにそろえる",
+    "abstract final class DotwearTokens {",
+    ...lines,
+    "}",
+    "",
+  ].join("\n");
+}
+
+function dartValue(t: TransformedToken): string {
+  const v = t.$value as unknown;
+  switch (t.$type) {
+    case "color": {
+      const hex = String(v).replace("#", "");
+      if (!/^[0-9a-fA-F]{6}$/.test(hex)) throw new Error(`Dart には #RRGGBB の色だけを出せます: ${t.name} = ${String(v)}`);
+      return ` = Color(0xFF${hex.toUpperCase()})`;
+    }
+    case "dimension": {
+      const d = v as { value: number; unit: string };
+      if (d.unit !== "px" || !Number.isInteger(d.value)) throw new Error(`Dart には整数の px の長さだけを出せます: ${t.name}`);
+      return ` = ${d.value}`;
+    }
+    case "number":
+      if (!Number.isInteger(v)) throw new Error(`number のトークンは整数（ドット数）にしてください: ${t.name}`);
+      return ` = ${String(v)}`;
+    case "fontFamily": {
+      const first = (Array.isArray(v) ? v : [v])[0];
+      if (typeof first !== "string") throw new Error(`fontFamily が空です: ${t.name}`);
+      return ` = ${JSON.stringify(first)}`;
+    }
+    default:
+      throw new Error(`Dart に出せない型のトークンです: ${t.name}（${String(t.$type)}）`);
+  }
 }

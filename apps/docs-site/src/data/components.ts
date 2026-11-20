@@ -11,7 +11,13 @@ export interface ComponentDoc {
   webApi: { api: string; description: string }[];
   /** iOS の API（見出しの下に表で出す） */
   swiftApi: { api: string; description: string }[];
-  /** コード例の名前（上から順に出す）。Web（src/snippets/components.tsx）と Swift（Snippets.swift）で同じ名前にする */
+  /** React Native の API（props） */
+  reactNativeApi: { api: string; description: string }[];
+  /** Flutter の API（引数） */
+  flutterApi: { api: string; description: string }[];
+  /** コード例の名前（上から順に出す）。Web（src/snippets/components.tsx）・Swift（Snippets.swift）・
+   *  React Native（apps/demo-react-native/doc-snippets/snippets.tsx）・
+   *  Flutter（apps/demo-flutter/doc_snippets/snippets.dart）で同じ名前にする */
   snippets: { title: string; name: string }[];
   accessibility: string[];
 }
@@ -46,6 +52,21 @@ export const COMPONENTS: ComponentDoc[] = [
       { api: ".buttonStyle(.dotwear(_ variant:, size:))", description: "variant: .primary .secondary .danger .ghost — size: .small .medium .large" },
       { api: ".dotwearLoading(_ isLoading: Bool = true)", description: "Shows the loading dots. Does not disable the button; add .disabled if needed" },
     ],
+    reactNativeApi: [
+      { api: 'variant="primary"', description: '"primary" (default), "secondary", "danger", "ghost"' },
+      { api: 'size="medium"', description: '"small", "medium" (default), "large"' },
+      { api: "icon={dwSave}", description: "An icon before the label (decorative). Icon-only buttons need accessibilityLabel" },
+      { api: "loading", description: "Shows the loading dots and sets accessibilityState.busy. Does not disable the button; add disabled if needed" },
+      { api: "…Pressable props", description: "onPress, disabled, accessibilityLabel, style, … The button takes its content width; stretch it with style" },
+    ],
+    flutterApi: [
+      { api: "onPressed", description: "Required. null disables the button, like Flutter's standard buttons" },
+      { api: "variant: DotwearButtonVariant.primary", description: ".primary (default), .secondary, .danger, .ghost" },
+      { api: "size: DotwearButtonSize.medium", description: ".small, .medium (default), .large" },
+      { api: "icon: DotwearIcons.save", description: "An icon before the label (decorative). Icon-only buttons need semanticLabel" },
+      { api: "loading: true", description: "Shows the loading dots. The label is still read. Does not disable the button" },
+      { api: "DotwearButtonStyle.of(context, …)", description: "The same look as a ButtonStyle for any standard button. Also pass clipBehavior: Clip.none" },
+    ],
     snippets: [
       { title: "Variants and sizes", name: "button" },
       { title: "Loading", name: "button-loading" },
@@ -53,6 +74,8 @@ export const COMPONENTS: ComponentDoc[] = [
     accessibility: [
       "Web: it is a standard <button>, so keyboard, focus, screen readers and form submission work as usual. The focus ring appears for keyboard focus (:focus-visible).",
       "iOS: it is a standard Button, so VoiceOver, Dynamic Type, Full Keyboard Access and Voice Control work as usual.",
+      "React Native: a standard Pressable with accessibilityRole=\"button\". The touch target is at least 44 pt (iOS) / 48 dp (Android).",
+      "Flutter: a standard TextButton, so screen readers, keyboard focus and the 48 × 48 touch target work as usual.",
       "Icon-only buttons must have an accessibility label.",
     ],
   },
@@ -80,10 +103,27 @@ export const COMPONENTS: ComponentDoc[] = [
       { api: ".textFieldStyle(.dotwear)", description: "Applies the Dotwear look to a TextField or SecureField" },
       { api: ".dotwearFieldError(_ message: String?)", description: "Shows an error message below the field. nil hides it" },
     ],
+    reactNativeApi: [
+      { api: "label", description: "Required. Shown above the field and used as its accessibilityLabel" },
+      { api: "value / onChangeText", description: "Same as TextInput" },
+      { api: "error", description: "Error message below the field, also read as the field's hint. undefined or null hides it" },
+      { api: "disabled", description: "Not editable, in disabled colors" },
+      { api: "…TextInput props", description: "Any TextInput prop (placeholder, keyboardType, secureTextEntry, autoComplete, …)" },
+    ],
+    flutterApi: [
+      { api: "label", description: "Required. Shown above the field and read as its name" },
+      { api: "controller / onChanged", description: "Same as TextField" },
+      { api: "error", description: "Error message below the field, also read as the field's hint. null hides it" },
+      { api: "enabled / placeholder", description: "Disabled colors / hint text shown while empty" },
+      { api: "keyboardType, obscureText, autofillHints, …", description: "Passed to the standard TextField" },
+      { api: "DotwearFieldFrame", description: "The frame alone, to wrap your own TextField (with DotwearFieldFrame.decoration(context))" },
+    ],
     snippets: [{ title: "Usage", name: "text-field" }],
     accessibility: [
       "Web: the label is a <label for>, and the error is linked with aria-describedby and aria-invalid.",
       "iOS: VoiceOver reads the error message as the field's hint, so it is announced together with the field.",
+      "React Native: a standard TextInput. The label is its accessibilityLabel and the error its accessibilityHint, so VoiceOver and TalkBack announce them with the field.",
+      "Flutter: a standard TextField. The label is read as its name and the error as its hint.",
       "The whole 44 pt row is tappable, not just the visible border.",
       "Placeholders are not labels: keep a visible label when the field needs one.",
     ],
@@ -102,10 +142,18 @@ export const COMPONENTS: ComponentDoc[] = [
       { api: "…div props", description: "Any <div> attribute" },
     ],
     swiftApi: [{ api: ".dotwearCard(_ variant: = .outlined)", description: "variant: .outlined .flat" }],
+    reactNativeApi: [
+      { api: 'variant="outlined"', description: '"outlined" (default), "flat"' },
+      { api: "…View props", description: "Any View prop" },
+    ],
+    flutterApi: [
+      { api: "variant: DotwearCardVariant.outlined", description: ".outlined (default), .flat" },
+      { api: "child", description: "The content, with 6 dots of padding" },
+    ],
     snippets: [{ title: "Usage", name: "card" }],
     accessibility: [
       "The card does not group or rename its content; screen readers read the children as they are.",
-      "Web: use a real heading (<h2> etc.) for the card title.",
+      "Web: use a real heading (<h2> etc.) for the card title. React Native: give the title Text accessibilityRole=\"header\". Flutter: wrap it in Semantics(header: true).",
     ],
   },
   {
@@ -133,10 +181,23 @@ export const COMPONENTS: ComponentDoc[] = [
       { api: ".toggleStyle(.dotwear)", description: "Switch" },
       { api: ".toggleStyle(.dotwear(.checkbox))", description: "Checkbox" },
     ],
+    reactNativeApi: [
+      { api: 'variant="switch"', description: '"switch" (default, accessibilityRole="switch") or "checkbox"' },
+      { api: "value / onValueChange(value)", description: "Same as the standard Switch, so onValueChange={setWifi} works" },
+      { api: "children", description: "The label. Tapping it toggles too. Without a visible label, pass accessibilityLabel" },
+      { api: "…Pressable props", description: "disabled, accessibilityLabel, style, …" },
+    ],
+    flutterApi: [
+      { api: "value / onChanged", description: "Same as the standard Switch. onChanged: null disables it" },
+      { api: "variant: DotwearToggleVariant.switch_", description: ".switch_ (default) or .checkbox" },
+      { api: "child", description: "The label. Tapping it toggles too. Without a visible label, pass semanticLabel" },
+    ],
     snippets: [{ title: "Usage", name: "toggle" }],
     accessibility: [
       "Web: a standard checkbox <input> (role=\"switch\" for the switch) wrapped in a <label>, so Space toggles it and clicking the label works.",
       "iOS: VoiceOver announces it exactly like a standard Toggle (\"Switch, on\"), for both looks.",
+      "React Native: a Pressable with accessibilityRole=\"switch\" or \"checkbox\" and accessibilityState.checked, so VoiceOver and TalkBack announce the role and state. The label and control are one element.",
+      "Flutter: reports toggled (switch) or checked (checkbox) like the standard Switch and Checkbox, and Space or Enter toggles it.",
     ],
   },
 ];

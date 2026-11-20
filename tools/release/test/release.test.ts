@@ -9,7 +9,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { exportPublic, findForbidden, PRIVATE_FILES, stripPrivate } from "../src/export-public.js";
 import { distPackageSwift } from "../src/export-swift.js";
 import { distKitPackageSwift } from "../src/export-swift-kit.js";
-import { assertVersion, replaceGradleVersion, replaceJsonVersion } from "../src/set-version.js";
+import { assertVersion, PUB_PACKAGES, replaceGradleVersion, replaceJsonVersion, replacePubspecVersion } from "../src/set-version.js";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -87,6 +87,24 @@ describe("set-version", () => {
   it("gradle.properties の VERSION_NAME を書き換える（なければ足す）", () => {
     expect(replaceGradleVersion("a=1\nVERSION_NAME=0.0.0\n", "0.1.0")).toBe("a=1\nVERSION_NAME=0.1.0\n");
     expect(replaceGradleVersion("a=1\n", "0.1.0")).toBe("a=1\nVERSION_NAME=0.1.0\n");
+  });
+});
+
+describe("replacePubspecVersion", () => {
+  it("version と、仲間のパッケージへの ^ 付きの依存だけを書き換える", () => {
+    const yaml = "name: dotwear\nversion: 0.1.0\n\ndependencies:\n  flutter:\n    sdk: flutter\n  dotwear_icons: ^0.1.0\n  material_ui: ^1.5.0\n";
+    const next = replacePubspecVersion(yaml, "0.2.0");
+    expect(next).toContain("version: 0.2.0\n");
+    expect(next).toContain("  dotwear_icons: ^0.2.0\n");
+    expect(next).toContain("  material_ui: ^1.5.0\n");
+    expect(() => replacePubspecVersion("name: x\n", "0.2.0")).toThrow();
+  });
+
+  it("実際の pubspec.yaml を書き換えられる", async () => {
+    for (const dir of PUB_PACKAGES) {
+      const yaml = await readFile(path.join(REPO_ROOT, dir, "pubspec.yaml"), "utf8");
+      expect(replacePubspecVersion(yaml, "9.9.9")).toMatch(/^version: 9\.9\.9$/m);
+    }
   });
 });
 

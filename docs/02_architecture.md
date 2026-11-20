@@ -83,6 +83,23 @@ SVG には `shape-rendering="crispEdges"` を付け、`viewBox="0 0 16 16"` と�
 - 文字は同梱の DotGothic16（`@dotwear/web/fonts.css` と `generated/fonts/`。`pnpm generate tokens` が `fonts/` からコピーする。ADR-026）
 - `@dotwear/icons` の定義と `DotwearIcon` を再 export する（UI 一式を入れればアイコンも使える）
 
+### React Native（`packages/react-native-icons`・`packages/react-native`。ADR-032）
+
+**`@dotwear/react-native-icons` … アイコンだけ**
+- アイコンの定義は `@dotwear/icons` のものを再 export する（React Native 用の生成物は作らない）
+- `DotwearIcon` は `View` の矩形を並べて描く。パス（M / h / v / z）を nonzero の規則でマス目に戻し、矩形にまとめ直す（`src/geometry.ts`。結果は layer ごとに覚える）
+- 1 マスは「scale × 画面の倍率」を切り捨てた整数ピクセル（Android と同じ。ADR-019）。dp は「整数ピクセル ÷ 倍率」にするので、Yoga の丸めでも境界がずれない。倍率は `useWindowDimensions().scale`
+- `#` の色とパレットは `DotwearIconProvider`（Context）で配る。React Native には色の継承がないため
+- テストは Jest（`@react-native/jest-preset`）と Testing Library。元データとのマス目の一致と、倍率 1〜4（2.625 などの端数を含む）で境界が整数ピクセルになることを確かめる
+
+**`@dotwear/react-native` … UI 一式**
+- トークンは `generated/tokens.ts`（`generate react-native`）。値は StyleSheet にそのまま渡せる形（色は `#rrggbb`、長さは単位なしの dp、書体は最初の 1 つの名前）
+- `DotwearTheme`（Context）と `useDotwear()`。寸法はドット数で持ち、`dots(n)` で dp にする。1 ドットは「pixelUnit × 画面の倍率」を切り捨てた整数ピクセル（Android の `Dotwear.dots` と同じ）。`DotwearTheme` はアイコンの既定の色を文字色にする
+- フォントは `generated/fonts/DotGothic16.ttf`。ファイル名をフォントの名前にそろえ、iOS（フォントの中の名前）と Android（ファイル名）の両方で `fontFamily: "DotGothic16"` で引けるようにする。Expo 向けに `dotwearFonts`（`useFonts` に渡す組）を出す。tsc はフォントを出力しないので、build で `dist/generated/fonts/` にコピーする
+- `@dotwear/react-native-icons` を再 export する
+- 部品：`DotwearButton`・`DotwearTextField`・`DotwearToggle`・`DotwearCard`。標準の `Pressable`・`TextInput` に見た目を被せる（ADR-003）。Toggle は `Pressable` ＋ `accessibilityRole="switch"`／`"checkbox"`（ADR-032）。タップ領域は iOS 44pt・Android 48dp を `minHeight`／`minWidth` で確保する
+- 外装（階段状の角の地・外の線・内の線・影・フォーカスリング）は `src/chromeGeometry.ts` で横の帯（矩形）に分けて計算し、`src/ChromeBox.tsx` が View で描く。React Native にはパスの塗りがないため。形は Android の `steppedPath`／`steppedBorderPath` と同じで、テストで頂点の多角形を偶奇規則で塗った絵と 1 ピクセルずつ比べる。大きさが中身で決まる部品は onLayout で測った大きさ（物理ピクセルに丸める）から描くので、最初の 1 回の描画では外装が出ない
+
 ### iOS（`packages/swift`、Swift Package: `Dotwear`）
 
 1 つの Swift Package に 2 つのプロダクトを入れる。利用者は必要なほうだけを追加できる。
@@ -139,6 +156,21 @@ SVG には `shape-rendering="crispEdges"` を付け、`viewBox="0 0 16 16"` と�
   - JVM（Robolectric）：`auditSemantics` で、押せる部品・切り替えられる部品に読み上げる名前があり、タップ領域が 48dp 以上かを全画面で確かめる。標準の文字の大きさと 2 倍の両方。Robolectric の上では Google の ATF が動かない（検査が素通りになる）ため、自前で書いている
   - エミュレーター：`androidTest` で本物の ATF（`enableAccessibilityChecks`）を有効にして全画面を巡る。CI でもエミュレーターで動かす
 
+### Flutter（`packages/flutter/dotwear_icons`・`packages/flutter/dotwear`。ADR-033）
+
+- 2 つのパッケージは `packages/flutter/pubspec.yaml` の pub workspace にまとめ、公開前でも手元のソースどうしで依存を解決する
+- アイコンはジェネレーターの `generate flutter` で `lib/src/generated/` に出す（`DotwearIcons.save` などの const。矩形は `gridToRects`）。git には入れず、pub.dev に公開するときは `.pubignore` で含める
+- 1 マスは `dotwearCellPx(scale, devicePixelRatio)`（切り捨てた整数ピクセル）。Flutter は位置を端数のまま持つので、描くときに画面上の位置を実際のピクセルの境界まで丸めてずらし、アンチエイリアスも切る
+- `#` の色は `color` → `DotwearIconTheme` → 標準の `IconTheme` の順。パレットは `DotwearIconTheme(palette: DotwearPalettes.retroGreen)`
+- 読み上げ：`semanticLabel` があれば画像として読み、なければ読み上げから外す（Material の `Icon` と同じ）
+- テスト（`pnpm test:flutter`）：倍率 1・1.5・2・2.625・3 で、端数の位置に置いたすべてのアイコンを画像にして元データと 1 ピクセルずつ比べる（外側 1px のにじみも見る）
+- UI（`dotwear`）は `material_ui` に乗せる（Flutter 3.47 から Material は SDK の外。ADR-033）
+  - トークンは `generate flutter` で `lib/src/generated/dotwear_tokens.g.dart`（`DotwearTokens.colorPrimary` など）、フォントは `fonts/DotGothic16.ttf`
+  - テーマは `DotwearThemeData`（`ThemeExtension`）。`Dotwear.of(context).dots(n)` でドット数を論理ピクセルにする（1 ドットは整数ピクセル）
+  - 外装（階段の角・二重線・影・フォーカスリング）は `chrome_geometry.dart` で整数ピクセルの矩形にし、`RenderDotwearChrome` が本体の四隅を実際のピクセルに丸めてから描く（アンチエイリアスなし）
+  - Button は `TextButton`＋`DotwearButtonStyle`（`backgroundBuilder`、`clipBehavior: Clip.none`）、TextField は `TextField`＋`DotwearFieldFrame`、Toggle は `Semantics(toggled/checked)`＋`FocusableActionDetector`、Card は外装だけ
+  - テスト：外装の形を 1 ピクセルずつの素朴な実装と比べる。読み上げ（役割・名前・状態）と操作。倍率 5 種で、文字のない部品のすべてのピクセルが 4 階調のどれかちょうどであること
+
 ### Unity（`packages/unity`、Phase 5）
 
 - アイコンだけと UI 一式に分ける方針は同じ（パッケージ構成は Phase 5 で決める）
@@ -169,7 +201,7 @@ MVP の対象は Button、TextField、Card、Toggle（Checkbox）。
 
 ## 6. ツール
 
-- `tools/generator`：`validate` → `build-paths` → `emit-web` / `emit-swift` / `emit-android`。各 emitter は独立させる。
+- `tools/generator`：`validate` → `build-paths` → `emit-web` / `emit-swift` / `emit-android` / `emit-dart`。各 emitter は独立させる。
 - `tools/editor`：ブラウザでマス目を塗って `icon.json` を読み書きできるエディタ（`pnpm dev:editor`）。
   - 3 層に分け、保存の層だけを差し替えられるようにする。
     - `src/model/`：編集の操作（塗る・線・塗りつぶし・履歴）と、`icon.json` の書き出し。画面にも保存先にも依存しない
@@ -183,11 +215,13 @@ MVP の対象は Button、TextField、Card、Toggle（Checkbox）。
 ## 7. 配布
 
 **公開の流れ**
-1. `pnpm release:version 0.1.0`：リポジトリ直下の `version` を、npm の各パッケージと `packages/android/gradle.properties` に書き写す（全配布物で同じ番号。ADR-020）
+1. `pnpm release:version 0.2.0`：リポジトリ直下の `version` を、npm の各パッケージ、Flutter の `pubspec.yaml`（仲間のパッケージへの依存の版も）、`packages/android/gradle.properties` に書き写す（全配布物で同じ番号。ADR-020）
 2. コミットしてタグ `v0.1.0` を push すると、`.github/workflows/release.yml` が公開する
-   - npm：`@dotwear/icons`・`@dotwear/web` を**段階公開**で候補として置く（Trusted Publishing でトークンなし。provenance 付き。ライセンス文は prepack でリポジトリ直下からコピー）。メンテナーが npm の Staged Packages の画面か `npm stage approve` で承認すると公開される
+   - npm：`@dotwear/icons`・`@dotwear/web`・`@dotwear/react-native-icons`・`@dotwear/react-native` を**段階公開**で候補として置く（Trusted Publishing でトークンなし。provenance 付き。ライセンス文は prepack でリポジトリ直下からコピー）。メンテナーが npm の Staged Packages の画面か `npm stage approve` で承認すると公開される
    - Maven Central：`dev.dotwear:dotwear-icons`・`dotwear-compose`（`com.vanniktech.maven.publish`。署名は鍵があるときだけ）。リポジトリの変数 `PUBLISH_MAVEN` が `true` のときだけ公開する
    - Swift：`pnpm release:export-swift` で書き出し、単体で `swift build` できることを確かめてから `dotwear-dev/dotwear-swift` に push してタグを付ける。配布用の `Package.swift` はテスト用の依存を含まない（SPM はテストだけの依存も利用者の側で取得するため）
+   - pub.dev：`dotwear_icons`・`dotwear`。毎回 `flutter test` と `flutter pub publish --dry-run`。本番はタグの push のときに、GitHub の Environment `pub.dev` の承認を待ってから OIDC で公開する（`prepare-pub` で生成物とライセンス文を置いてから）
+   - その版がもうレジストリにあるパッケージは飛ばす（新しいパッケージの最初の版はメンテナーが手元から出す。ADR-034）
    - GitHub の Releases：npm と Swift が済んだら、`docs/releases/v<版番号>.md` を本文にして作る
 3. 手動実行（workflow_dispatch）は既定で dry-run。何も公開せずに、公開できる状態かだけを確かめる
 - ドキュメントサイトのビルドは `pnpm --filter @dotwear/docs-site run build`、出力は `apps/docs-site/dist`（静的な HTML）

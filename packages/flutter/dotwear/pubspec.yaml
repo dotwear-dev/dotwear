@@ -1,0 +1,36 @@
+name: dotwear
+description: Pixel-art UI for Flutter business apps. Buttons, text fields, cards and toggles styled on top of the standard widgets, with design tokens and a bundled pixel font. Part of the Dotwear design system.
+version: 0.2.0
+homepage: https://dotwear.dev
+repository: https://github.com/dotwear-dev/dotwear/tree/main/packages/flutter/dotwear
+issue_tracker: https://github.com/dotwear-dev/dotwear/issues
+topics:
+  - design-system
+  - pixel-art
+  - ui
+  - theme
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dotwear_icons: ^0.2.0
+  # Flutter 3.47 から Material の部品は SDK の外の material_ui に移った（package:flutter/material.dart は非推奨）
+  material_ui: ^1.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  # DotGothic16（SIL Open Font License 1.1）。ジェネレーターが fonts/ に置く（ADR-026・ADR-033）。
+  # 利用側では TextStyle(fontFamily: 'DotGothic16', package: 'dotwear') で使う
+  fonts:
+    - family: DotGothic16
+      fonts:
+        - asset: fonts/DotGothic16.ttf

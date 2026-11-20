@@ -2,10 +2,11 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { emitAndroid, emitAndroidKit } from "./emit/android.js";
 import { emitBrand, loadBrandColor } from "./emit/brand.js";
-import { emitAndroidFonts, emitFonts, emitWebFonts } from "./emit/fonts.js";
+import { emitDart } from "./emit/dart.js";
+import { emitAndroidFonts, emitDartFonts, emitFonts, emitReactNativeFonts, emitWebFonts } from "./emit/fonts.js";
 import { emitSiteIcons, loadSiteColors } from "./emit/site-icons.js";
 import { emitSwift, emitSwiftKit } from "./emit/swift.js";
-import { emitKotlinTokens, emitSwiftTokens, emitTokens } from "./emit/tokens.js";
+import { emitDartTokens, emitKotlinTokens, emitReactNativeTokens, emitSwiftTokens, emitTokens } from "./emit/tokens.js";
 import { emitWeb } from "./emit/web.js";
 import { loadIcons, loadPalette } from "./source/load.js";
 import { formatIssue, sortIssues, validateAll } from "./validate/index.js";
@@ -35,7 +36,7 @@ async function runValidate(): Promise<number> {
 
 // 出力の対象。パッケージの build からは自分の分だけを指定する。
 // turbo は icons と web の build を並列に走らせるので、同じ出力先を 2 つのプロセスが同時に作り直さないようにするため
-const TARGETS = ["icons", "tokens", "brand", "swift", "android", "kit-web", "kit-swift", "kit-android"] as const;
+const TARGETS = ["icons", "tokens", "brand", "swift", "android", "react-native", "flutter", "kit-web", "kit-swift", "kit-android"] as const;
 type Target = (typeof TARGETS)[number];
 
 // 元データから各プラットフォームの生成物を出力する。
@@ -112,6 +113,25 @@ async function runGenerate(args: string[]): Promise<number> {
     await emitAndroidFonts({ root, outDir: path.join(projectDir, "compose", "src", "generated") });
     console.log(`✔ Free のアイコン ${icons.filter((i) => i.tier === "free").length} 個とデザイントークンを ${rel(projectDir)}/ の src/generated/ に出力しました`);
   }
+  if (targets.has("react-native")) {
+    // アイコンは @dotwear/icons の定義を使い回すので、ここではトークンとフォントだけを出す（ADR-032）
+    const outDir = path.join(root, "packages", "react-native", "generated");
+    await emitReactNativeTokens({ root, outDir });
+    // emitReactNativeTokens が generated/ を作り直すので、その後にフォントを出す
+    await emitReactNativeFonts({ root, outDir });
+    console.log(`✔ デザイントークンとフォントを ${rel(outDir)}/ に出力しました`);
+  }
+  if (targets.has("flutter")) {
+    // Flutter の 2 つのパッケージ（packages/flutter/dotwear_icons・dotwear）。ADR-033
+    const icons = await loadIcons(path.join(root, "icons"));
+    const packageDir = path.join(root, "packages", "flutter", "dotwear_icons");
+    await emitDart({ icons, palette: await loadPalette(root), packageDir });
+    console.log(`✔ Free のアイコン ${icons.filter((i) => i.tier === "free").length} 個を ${rel(packageDir)}/ に出力しました`);
+    const uiDir = path.join(root, "packages", "flutter", "dotwear");
+    await emitDartTokens({ root, outDir: path.join(uiDir, "lib", "src", "generated") });
+    await emitDartFonts({ root, outDir: path.join(uiDir, "fonts") });
+    console.log(`✔ デザイントークンとフォントを ${rel(uiDir)}/ に出力しました`);
+  }
   if (targets.has("kit-web") || targets.has("kit-swift") || targets.has("kit-android")) {
     // Kit（Free と Pro の全部が入る認証付きのパッケージ。ADR-023）。
     // Kit のパッケージは非公開のリポジトリにだけあるので、フォルダがないプラットフォームは飛ばす
@@ -149,7 +169,7 @@ async function main(): Promise<void> {
       process.exitCode = await runGenerate(args);
       return;
     default:
-      console.error(`使い方: dotwear-generator validate | generate [icons] [tokens] [brand] [swift] [android] [kit | kit-web kit-swift kit-android]\n不明なコマンド: ${command ?? "(なし)"}`);
+      console.error(`使い方: dotwear-generator validate | generate [icons] [tokens] [brand] [swift] [android] [react-native] [flutter] [kit | kit-web kit-swift kit-android]\n不明なコマンド: ${command ?? "(なし)"}`);
       process.exitCode = 2;
   }
 }

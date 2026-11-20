@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, describe, expect, it } from "vitest";
-import { androidFontResourceName, emitAndroidFonts, emitFonts, emitWebFonts } from "../src/emit/fonts.js";
+import { androidFontResourceName, emitAndroidFonts, emitFonts, emitReactNativeFonts, emitWebFonts } from "../src/emit/fonts.js";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const dirs: string[] = [];
@@ -51,5 +51,16 @@ describe("emitAndroidFonts", () => {
     expect(await emitAndroidFonts({ root: REPO_ROOT, outDir })).toEqual(["dotgothic16_regular.ttf"]);
     expect(await readdir(path.join(outDir, "res", "font"))).toEqual(["dotgothic16_regular.ttf"]);
     expect(await readFile(path.join(outDir, "assets", "licenses", "DotGothic16-OFL.txt"), "utf8")).toContain("SIL Open Font License");
+  });
+});
+
+describe("emitReactNativeFonts", () => {
+  it("ファイル名をフォントの名前にそろえ（iOS と Android の両方で fontFamily: \"DotGothic16\" で引ける）、ライセンス文も置く", async () => {
+    const outDir = await mkdtemp(path.join(os.tmpdir(), "dw-rn-fonts-"));
+    dirs.push(outDir);
+    expect(await emitReactNativeFonts({ root: REPO_ROOT, outDir })).toEqual(["DotGothic16.ttf"]);
+    expect((await readdir(path.join(outDir, "fonts"))).sort()).toEqual(["DotGothic16-OFL.txt", "DotGothic16.ttf"]);
+    const original = await readFile(path.join(REPO_ROOT, "fonts", "DotGothic16", "DotGothic16-Regular.ttf"));
+    expect((await readFile(path.join(outDir, "fonts", "DotGothic16.ttf"))).equals(original)).toBe(true);
   });
 });

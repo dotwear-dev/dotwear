@@ -1,0 +1,13 @@
+{
+  "name": "@dotwear/flutter",
+  "private": true,
+  "description": "Flutter（Dart）の生成物を作るための workspace。ビルドとテストは flutter で行う（ADR-033）",
+  "scripts": {
+    "build": "dotwear-generator generate flutter",
+    "prepare-pub": "dotwear-generator generate flutter && cp ../../LICENSE dotwear_icons/LICENSE && cp ../../LICENSE dotwear/LICENSE",
+    "test:flutter": "flutter pub get && (cd dotwear_icons && flutter analyze && flutter test) && (cd dotwear && flutter analyze && flutter test)"
+  },
+  "devDependencies": {
+    "@dotwear/generator": "workspace:*"
+  }
+}

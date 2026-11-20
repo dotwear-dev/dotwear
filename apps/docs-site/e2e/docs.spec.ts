@@ -50,6 +50,29 @@ test("タブは矢印キーで切り替えられる", async ({ page }) => {
   const swiftTab = group.getByRole("tab", { name: "iOS (SwiftUI)" });
   await expect(swiftTab).toBeFocused();
   await expect(swiftTab).toHaveAttribute("aria-selected", "true");
+  // 右端の次は先頭に戻る（Web → iOS → React Native → Flutter → Web）
+  await page.keyboard.press("ArrowRight");
+  await expect(group.getByRole("tab", { name: "React Native" })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(group.getByRole("tab", { name: "Flutter" })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(group.getByRole("tab", { name: "Web (React)" })).toBeFocused();
+});
+
+test("すべてのコード例のタブに React Native と Flutter がある", async ({ page }) => {
+  // React Native のコード例は apps/demo-react-native/doc-snippets から取り出す。抜けがあれば build が止まるが、タブの付け忘れはここで見る
+  for (const href of ["/getting-started/", "/icons/usage/", "/theming/", "/components/button/", "/components/text-field/", "/components/card/", "/components/toggle/"]) {
+    await page.goto(href);
+    for (const group of await page.locator("[data-code-tabs]").all()) {
+      await expect(group.getByRole("tab", { name: "React Native" }), href).toHaveCount(1);
+      await expect(group.getByRole("tab", { name: "Flutter" }), href).toHaveCount(1);
+    }
+  }
+  await page.goto("/getting-started/");
+  await page.getByRole("tab", { name: "React Native" }).first().click();
+  await expect(page.locator("[data-code-tabs]").nth(1).locator('[role="tabpanel"][data-platform="react-native"]')).toContainText("useFonts(dotwearFonts)");
+  await page.getByRole("tab", { name: "Flutter" }).first().click();
+  await expect(page.locator("[data-code-tabs]").nth(1).locator('[role="tabpanel"][data-platform="flutter"]')).toContainText("toThemeData()");
 });
 
 test.describe("JavaScript が動かないとき", () => {
@@ -61,5 +84,7 @@ test.describe("JavaScript が動かないとき", () => {
     await expect(group.getByRole("tablist", { includeHidden: true })).toBeHidden();
     await expect(group.locator('[data-platform="web"][role="tabpanel"]')).toBeVisible();
     await expect(group.locator('[data-platform="swift"][role="tabpanel"]')).toBeVisible();
+    await expect(group.locator('[data-platform="react-native"][role="tabpanel"]')).toBeVisible();
+    await expect(group.locator('[data-platform="flutter"][role="tabpanel"]')).toBeVisible();
   });
 });

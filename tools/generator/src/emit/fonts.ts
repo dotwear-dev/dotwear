@@ -104,3 +104,48 @@ export async function emitAndroidFonts({ root, outDir }: EmitAndroidFontsOptions
   }
   return renamed;
 }
+
+export interface EmitReactNativeFontsOptions {
+  root: string;
+  /** packages/react-native/generated。この下の fonts/ を作り直す */
+  outDir: string;
+}
+
+/**
+ * React Native 用：フォントを <outDir>/fonts/<フォント名>.ttf にコピーする（DotGothic16-Regular.ttf → DotGothic16.ttf）。
+ * React Native の fontFamily は、iOS ではフォントの中の名前（DotGothic16）、Android ではファイル名で探すので、
+ * ファイル名をフォントの名前にそろえて、どちらでも fontFamily: "DotGothic16" で引けるようにする。
+ * Expo の useFonts でも同じ名前を使う。太さが 1 つだけのフォントに限る
+ */
+export async function emitReactNativeFonts({ root, outDir }: EmitReactNativeFontsOptions): Promise<string[]> {
+  const fontDir = path.join(outDir, "fonts");
+  await rm(fontDir, { recursive: true, force: true });
+  const copied = await emitFonts({ root, outDir: fontDir });
+  const renamed: string[] = [];
+  for (const font of BUNDLED_FONTS) {
+    const files = copied.filter((f) => f.startsWith(`${font}-`) || f.startsWith(`${font}.`));
+    if (files.length !== 1) throw new Error(`React Native では 1 つの書体に 1 つのファイルだけを配れます: ${font}（${files.join(", ")}）`);
+    const name = `${font}${path.extname(files[0]!)}`;
+    await rename(path.join(fontDir, files[0]!), path.join(fontDir, name));
+    renamed.push(name);
+  }
+  return renamed;
+}
+
+/**
+ * Flutter の同梱フォントを出す（outDir は packages/flutter/dotwear/fonts）。
+ * pubspec.yaml の fonts に書く名前を固定するため、React Native と同じく「書体名.拡張子」にする（ライセンス文も一緒に置く）
+ */
+export async function emitDartFonts({ root, outDir }: { root: string; outDir: string }): Promise<string[]> {
+  await rm(outDir, { recursive: true, force: true });
+  const copied = await emitFonts({ root, outDir });
+  const renamed: string[] = [];
+  for (const font of BUNDLED_FONTS) {
+    const files = copied.filter((f) => f.startsWith(`${font}-`) || f.startsWith(`${font}.`));
+    if (files.length !== 1) throw new Error(`Flutter では 1 つの書体に 1 つのファイルだけを配れます: ${font}（${files.join(", ")}）`);
+    const name = `${font}${path.extname(files[0]!)}`;
+    await rename(path.join(outDir, files[0]!), path.join(outDir, name));
+    renamed.push(name);
+  }
+  return renamed;
+}

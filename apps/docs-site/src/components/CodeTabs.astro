@@ -1,18 +1,18 @@
 ---
-// プラットフォームごとのコード例をタブで切り替える（Web / SwiftUI。Android は後から同じ形で足す）。
+// プラットフォームごとのコード例をタブで切り替える（Web / SwiftUI / React Native / Flutter。Android は後から同じ形で足す）。
 // - 選んだプラットフォームは、ページ内のすべてのタブとほかのページにも引き継ぐ（localStorage）
 // - JavaScript が動かないときは、タブを出さずに全部のパネルを見出し付きで並べる
 // - キーボード操作は WAI-ARIA の Tabs パターン（左右の矢印・Home・End）
 // コードの色は global.css の --astro-code-* で 4 階調にする（色相のある配色を使わない。ADR-027）
 import { Code } from "astro:components";
 
-export type Platform = "web" | "swift";
+export type Platform = "web" | "swift" | "react-native" | "flutter";
 
 export interface TabItem {
   platform: Platform;
-  /** コード。src/lib/snippets.ts の web() / swift() で取り出したもの、またはコマンドなどの文字列 */
+  /** コード。src/lib/snippets.ts の web() / swift() / reactNative() / flutter() で取り出したもの、またはコマンドなどの文字列 */
   code?: string;
-  lang?: "tsx" | "swift" | "sh" | "css" | "json";
+  lang?: "tsx" | "swift" | "sh" | "css" | "json" | "dart" | "yaml";
   /** コードの代わり、またはコードの前に出す短い説明（「準備中」など） */
   note?: string;
 }
@@ -23,8 +23,8 @@ interface Props {
   label: string;
 }
 
-const LABELS: Record<Platform, string> = { web: "Web (React)", swift: "iOS (SwiftUI)" };
-const DEFAULT_LANG: Record<Platform, TabItem["lang"]> = { web: "tsx", swift: "swift" };
+const LABELS: Record<Platform, string> = { web: "Web (React)", swift: "iOS (SwiftUI)", "react-native": "React Native", flutter: "Flutter" };
+const DEFAULT_LANG: Record<Platform, TabItem["lang"]> = { web: "tsx", swift: "swift", "react-native": "tsx", flutter: "dart" };
 
 const { items, label } = Astro.props;
 // 同じページに複数のタブがあるので、id が重複しないように連番を付ける

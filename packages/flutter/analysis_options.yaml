@@ -1,0 +1,12 @@
+# Flutter のパッケージ共通の静的解析の設定。flutter_lints に頼らず、型を厳しく見る設定だけを置く
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+linter:
+  rules:
+    - always_declare_return_types
+    - prefer_const_constructors
+    - prefer_final_fields
+    - unawaited_futures

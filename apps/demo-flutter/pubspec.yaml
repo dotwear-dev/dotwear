@@ -1,0 +1,28 @@
+# Flutter のデモアプリ（ADR-033）。iOS・Android・React Native のデモと同じ画面構成（ログイン → 受注一覧 → 詳細、設定）
+name: dotwear_demo
+description: "Dotwear の Flutter のデモ"
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  material_ui: ^1.5.0
+  # 手元のパッケージを使う（pub workspace の外にあるので path で参照する）
+  dotwear:
+    path: ../../packages/flutter/dotwear
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: false
+
+# dotwear は dotwear_icons に版番号で依存する（pub.dev に公開したときのため）。公開前なので手元のソースに向ける
+dependency_overrides:
+  dotwear_icons:
+    path: ../../packages/flutter/dotwear_icons

@@ -1,0 +1,9 @@
+# Flutter のパッケージをまとめる pub workspace（Dart 3.6 以降の仕組み）。
+# 中のパッケージどうしの依存（dotwear → dotwear_icons）を、公開前でも手元のソースで解決するために使う。公開はしない
+name: dotwear_flutter_workspace
+publish_to: none
+environment:
+  sdk: ^3.13.0
+workspace:
+  - dotwear_icons
+  - dotwear

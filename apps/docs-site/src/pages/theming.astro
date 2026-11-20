@@ -3,11 +3,11 @@
 import { tokens } from "@dotwear/web";
 import CodeTabs from "../components/CodeTabs.astro";
 import Base from "../layouts/Base.astro";
-import { swift, web } from "../lib/snippets";
+import { flutter, reactNative, swift, web } from "../lib/snippets";
 
 // camelCase のキー → CSS 変数名（onPrimary → --dw-color-on-primary）
 const cssVar = (group: string, key: string) => `--dw-${group}-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
-// Swift の DotwearTheme.Colors のプロパティ名（bg と fg だけ名前が違う）
+// Swift の DotwearTheme.Colors と React Native の DotwearColors のプロパティ名（bg と fg だけ名前が違う）
 const SWIFT_COLOR: Record<string, string> = { bg: "background", fg: "foreground" };
 
 // ロゴ用の brand は利用者向けのトークンではないので載せない
@@ -15,24 +15,27 @@ const colors = Object.entries(tokens.color).filter(([k]) => k !== "brand");
 const shape = Object.entries(tokens.shape);
 ---
 
-<Base title="Theming & tokens" description="Dotwear's design tokens as CSS variables and SwiftUI theme values, and how to override them.">
+<Base title="Theming & tokens" description="Dotwear's design tokens as CSS variables, SwiftUI, React Native and Flutter theme values, and how to override them.">
   <article class="prose">
     <h1>Theming &amp; tokens</h1>
     <p>
       Colors and sizes come from one set of design tokens. On the web they are CSS variables in
-      <code>@dotwear/web/tokens.css</code>; in SwiftUI they are a <code>DotwearTheme</code> value in the environment.
+      <code>@dotwear/web/tokens.css</code>; in SwiftUI they are a <code>DotwearTheme</code> value in the environment; in
+      React Native they come from <code>&lt;DotwearTheme&gt;</code> and are read with <code>useDotwear()</code>; in
+      Flutter they are a <code>DotwearThemeData</code> theme extension, read with <code>Dotwear.of(context)</code>.
     </p>
 
     <h2>Lengths are counted in dots</h2>
     <p>
       Every length is a number of dots multiplied by the pixel unit (<code>{tokens.shape.pixelUnit}</code>, i.e. 2 pt in
-      SwiftUI). A button that is 16 dots tall is 32 px. Because everything is a whole multiple of one unit, borders,
+      SwiftUI, 2 dp in React Native and 2 logical pixels in Flutter). A button that is 16 dots tall is 32 px. React Native and Flutter round one dot down to
+      a whole number of device pixels, so on a 2.625× screen a dot is 5 device pixels. Because everything is a whole multiple of one unit, borders,
       steps and shadows always land on whole pixels.
     </p>
 
     <h2>Colors</h2>
     <table>
-      <thead><tr><th></th><th>CSS variable</th><th>SwiftUI</th><th>Value</th></tr></thead>
+      <thead><tr><th></th><th>CSS variable</th><th>SwiftUI</th><th>React Native</th><th>Flutter</th><th>Value</th></tr></thead>
       <tbody>
         {
           colors.map(([key, value]) => (
@@ -40,6 +43,8 @@ const shape = Object.entries(tokens.shape);
               <td><span class="swatch-chip" style={`background:${value}`} /></td>
               <td><code>{cssVar("color", key)}</code></td>
               <td><code>theme.colors.{SWIFT_COLOR[key] ?? key}</code></td>
+              <td><code>colors.{SWIFT_COLOR[key] ?? key}</code></td>
+              <td><code>dw.colors.{SWIFT_COLOR[key] ?? key}</code></td>
               <td><code>{value}</code></td>
             </tr>
           ))
@@ -49,13 +54,15 @@ const shape = Object.entries(tokens.shape);
 
     <h2>Shape</h2>
     <table>
-      <thead><tr><th>CSS variable</th><th>SwiftUI</th><th>Value</th></tr></thead>
+      <thead><tr><th>CSS variable</th><th>SwiftUI</th><th>React Native</th><th>Flutter</th><th>Value</th></tr></thead>
       <tbody>
         {
           shape.map(([key, value]) => (
             <tr>
               <td><code>{cssVar("shape", key)}</code></td>
               <td><code>theme.{key}</code></td>
+              <td><code>theme.{key}</code></td>
+              <td><code>dw.theme.{key}</code></td>
               <td><code>{value}</code>{key === "pixelUnit" ? "" : value === 1 ? " dot" : " dots"}</td>
             </tr>
           ))
@@ -69,6 +76,16 @@ const shape = Object.entries(tokens.shape);
       items={[
         { platform: "web", code: web("tokens-ts"), note: "In CSS, use the variables directly: var(--dw-color-primary). From TypeScript:" },
         { platform: "swift", code: swift("theme-read") },
+        {
+          platform: "react-native",
+          code: reactNative("theme-read"),
+          note: "useDotwear() returns the theme, its colors, and dots(n) to convert dots to dp.",
+        },
+        {
+          platform: "flutter",
+          code: flutter("theme-read"),
+          note: "Dotwear.of(context) returns the theme, its colors, and dots(n) to convert dots to logical pixels.",
+        },
       ]}
     />
 
@@ -86,6 +103,16 @@ const shape = Object.entries(tokens.shape);
           platform: "swift",
           note: "Set the theme at the root of your app. Any view can override it for its subtree with .dotwearTheme(...).",
           code: `${swift("theme-root")}\n\n${swift("theme-custom")}`,
+        },
+        {
+          platform: "react-native",
+          note: "Wrap your app in <DotwearTheme>. Nest another <DotwearTheme theme={…}> to override values for a subtree.",
+          code: `${reactNative("theme-root")}\n\n${reactNative("theme-custom")}`,
+        },
+        {
+          platform: "flutter",
+          note: "Pass the theme to MaterialApp. Use Theme(data: …) to override it for a subtree.",
+          code: `${flutter("theme-root")}\n\n${flutter("theme-custom")}`,
         },
       ]}
     />

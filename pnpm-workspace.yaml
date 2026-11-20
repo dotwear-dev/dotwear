@@ -6,3 +6,5 @@ packages:
 # インストール時のビルドスクリプトを許可する依存（tsx / vitest が使う esbuild）
 allowBuilds:
   esbuild: true
+  # Jest（jest-haste-map）の watch 用のファイル監視。jest --watch は使わないので、ネイティブのビルドは走らせない
+  "@parcel/watcher": false

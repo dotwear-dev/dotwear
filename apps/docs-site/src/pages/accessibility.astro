@@ -3,16 +3,20 @@
 import Base from "../layouts/Base.astro";
 ---
 
-<Base title="Accessibility" description="How Dotwear keeps VoiceOver, Dynamic Type and keyboard access working.">
+<Base title="Accessibility" description="How Dotwear keeps VoiceOver, TalkBack, Dynamic Type and keyboard access working.">
   <article class="prose">
     <h1>Accessibility</h1>
     <p>
       Dotwear does not replace platform controls. It styles them. A Dotwear button in SwiftUI is still a
       <code>Button</code>, a switch is still a <code>Toggle</code>, and a text field is still a <code>TextField</code>.
+      In React Native, buttons and toggles are a standard <code>Pressable</code> with the matching
+      <code>accessibilityRole</code> and <code>accessibilityState</code>, and a text field is a standard
+      <code>TextInput</code>. In Flutter, buttons are a standard <code>TextButton</code>, text fields a standard
+      <code>TextField</code>, and toggles report <code>toggled</code> or <code>checked</code> like the standard controls.
       What the platform gives those controls for free keeps working:
     </p>
     <ul>
-      <li>VoiceOver names, roles and states (for example “Switch, on”)</li>
+      <li>VoiceOver and TalkBack names, roles and states (for example “Switch, on”)</li>
       <li>Dynamic Type for labels</li>
       <li>Full Keyboard Access and focus rings</li>
       <li>Voice Control, text input and IME composition</li>
@@ -21,6 +25,8 @@ import Base from "../layouts/Base.astro";
     <h2>What we check</h2>
     <ul>
       <li>Automated audits of the iOS demo app (<code>performAccessibilityAudit</code>) on every change.</li>
+      <li>Tests of the role, name and state that each React Native and Flutter component reports.</li>
+      <li>Touch targets of at least 44 pt on iOS and 48 dp on Android in React Native, and 48 × 48 in Flutter.</li>
       <li>Pixel-exact rendering tests for every icon on every platform.</li>
     </ul>
 

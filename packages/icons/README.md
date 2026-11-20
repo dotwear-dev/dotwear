@@ -17,7 +17,7 @@ import { DotwearIcon } from "@dotwear/icons/react";
 
 - `scale` must be an integer (1 → 16px, 2 → 32px, …).
 - Without `title` the icon is decorative (`aria-hidden`).
-- `#` cells use `currentColor`; multi-color cells use `--dw-palette-2` … `--dw-palette-9` (import `@dotwear/icons/palette.css` for the default theme).
+- `#` cells use `currentColor`; multi-color cells use `--dw-palette-2` … `--dw-palette-9` (import `@dotwear/icons/palette.css` for the default theme). The same palettes are available as values in `palettes` (for example `palettes["retro-green"]`), for places without CSS variables such as canvas.
 - Pick an icon dynamically with `byName.save` (this bundles every icon).
 
 ## SVG

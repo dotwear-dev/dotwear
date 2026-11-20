@@ -18,7 +18,7 @@ interface Props {
   noindex?: boolean;
 }
 
-const { title, description = "Pixel-art icons and UI for Web and iOS apps, generated from one source of truth.", noindex = false } = Astro.props;
+const { title, description = "Pixel-art icons and UI for Web, iOS, React Native and Flutter apps, generated from one source of truth.", noindex = false } = Astro.props;
 const fullTitle = title === "Dotwear" ? title : `${title} | Dotwear`;
 // <!-- Generated ... --> のコメントを取り除いてから埋め込む
 const logoSvg = logo.replace(/<!--.*?-->\s*/s, "");

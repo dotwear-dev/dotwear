@@ -54,7 +54,7 @@ export async function emitWeb({ icons: all, palette, outDir, tiers = ["free"], t
   );
 
   await writeFile(path.join(outDir, "icons.ts"), renderIconsModule(icons, tiers, typesImport));
-  await writeFile(path.join(outDir, "palette.ts"), renderPaletteModule(defaults));
+  await writeFile(path.join(outDir, "palette.ts"), renderPaletteModule(palette, defaults));
   await writeFile(path.join(outDir, "palette.css"), renderPaletteCss(palette));
 }
 
@@ -104,16 +104,26 @@ function renderIconsModule(icons: IconSource[], tiers: readonly IconTier[], type
   return lines.join("\n");
 }
 
-function renderPaletteModule(defaults: PaletteTheme): string {
-  const entries = CELL_COLORS.filter((c) => c !== "#" && defaults[c as keyof PaletteTheme]).map(
-    (c) => `  ${JSON.stringify(c)}: ${JSON.stringify(defaults[c as keyof PaletteTheme])},`,
-  );
+function renderPaletteModule(palette: Palette, defaults: PaletteTheme): string {
+  // スロットの順（"2"〜"9"）に並べ、色のないスロットは出さない
+  const slotLines = (theme: PaletteTheme, indent: string) =>
+    CELL_COLORS.filter((c) => c !== "#" && theme[c as keyof PaletteTheme]).map(
+      (c) => `${indent}${JSON.stringify(c)}: ${JSON.stringify(theme[c as keyof PaletteTheme])},`,
+    );
   return [
     `// ${GENERATED_HEADER}`,
     `// パレットの default テーマ。CSS 変数 --dw-palette-* が未定義のときのフォールバックに使う`,
     `export const paletteDefaults: Readonly<Record<string, string>> = {`,
-    ...entries,
+    ...slotLines(defaults, "  "),
     `};`,
+    "",
+    `// すべてのパレット（キーは data-dw-palette と同じ名前）。CSS 変数を使えない場所（React Native・canvas など）で`,
+    `// パレットを切り替えるために使う。Swift の .retroGreen、Kotlin の DotwearPalette.RetroGreen に当たる`,
+    `export const palettes = {`,
+    ...Object.entries(palette).flatMap(([name, theme]) => [`  ${JSON.stringify(name)}: {`, ...slotLines(theme, "    "), `  },`]),
+    `} as const satisfies Readonly<Record<string, Readonly<Record<string, string>>>>;`,
+    "",
+    `export type DotwearPaletteName = keyof typeof palettes;`,
     "",
   ].join("\n");
 }

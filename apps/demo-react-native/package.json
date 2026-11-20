@@ -1,0 +1,33 @@
+{
+  "name": "@dotwear/demo-react-native",
+  "private": true,
+  "description": "React Native（Expo）のデモアプリ。iOS・Android のデモと同じ画面構成（ログイン → 受注一覧 → 詳細、設定）",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "expo start",
+    "ios": "expo start --ios",
+    "android": "expo start --android",
+    "test": "jest",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@dotwear/react-native": "workspace:*",
+    "@dotwear/react-native-icons": "workspace:*",
+    "expo": "58.0.26",
+    "expo-font": "~58.0.12",
+    "expo-status-bar": "~58.0.5",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "~5.11.1"
+  },
+  "devDependencies": {
+    "@react-native/jest-preset": "0.88.1",
+    "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.3.0",
+    "babel-preset-expo": "~58.0.26",
+    "jest": "^30.5.2",
+    "test-renderer": "^1.3.1",
+    "typescript": "^7.0.2"
+  }
+}

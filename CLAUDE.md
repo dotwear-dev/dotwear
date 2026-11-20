@@ -31,12 +31,17 @@
 ├─ packages/
 │  ├─ icons/                 # npm @dotwear/icons: アイコンだけ（SVG / React / パレットの CSS 変数）
 │  ├─ web/                   # npm @dotwear/web: UI 一式（コンポーネント / トークン）。icons に依存
+│  ├─ react-native-icons/    # npm @dotwear/react-native-icons: React Native のアイコンだけ（定義は icons を再 export）
+│  ├─ react-native/          # npm @dotwear/react-native: React Native の UI 一式（トークン / テーマ / フォント / 部品）
+│  ├─ flutter/               # Flutter（pub workspace）。dotwear_icons（アイコンだけ）と dotwear（UI 一式）
 │  ├─ swift/                 # Swift Package。プロダクト DotwearIcons（アイコンだけ）と Dotwear（UI 一式）
 │  ├─ android/               # Gradle / Maven。モジュール :icons（dotwear-icons）と :compose（dotwear-compose）
 │  └─ unity/                 # 予定
 └─ apps/
    ├─ docs-site/             # アイコン一覧・ドキュメントサイト
    ├─ demo-ios/              # 業務アプリ風デモ
+   ├─ demo-react-native/     # React Native（Expo）のデモ。iOS と同じ画面構成
+   ├─ demo-flutter/          # Flutter のデモ。iOS と同じ画面構成
    └─ demo-android/
 ```
 
@@ -61,11 +66,14 @@ pnpm dev:editor    # アイコン編集ツールを起動
 pnpm dev:docs      # ドキュメントサイトを起動
 pnpm dev:ios       # iOS のデモアプリを Xcode で開く（XcodeGen が必要：brew install xcodegen）
 pnpm dev:android   # Android のプロジェクト（ライブラリとデモ）を Android Studio で開く
+pnpm dev:flutter   # Flutter のデモを起動する（flutter run。起動する端末を選ぶ）
+pnpm dev:react-native  # React Native（Expo）のデモを起動する（i で iOS シミュレーター、a で Android エミュレーター）
 pnpm release:version <版番号>        # 全配布物の版番号をそろえて書き写す（ADR-020）
 pnpm release:export-public <出力先>  # 公開用リポジトリの中身を書き出す（非公開の部分を除く。ADR-008）
 pnpm release:export-swift <出力先>   # Swift の配布用リポジトリの中身を書き出す（ADR-017）
 pnpm test:e2e      # ブラウザでにじまないことの検査（Playwright。初回は playwright install が必要）
 pnpm test:android  # Android のテスト（Robolectric で pixel-roundtrip・スナップショット・アクセシビリティ。JDK 17 と Android SDK が必要）
+pnpm test:flutter  # Flutter のテスト（flutter test で pixel-roundtrip・にじみ・読み上げ・デモの画面の流れ。Flutter 3.47 以上が必要）
 pnpm test:swift    # Swift のテスト（macOS の swift test ＋ iOS シミュレーター ＋ デモのアクセシビリティ監査。Xcode と XcodeGen が必要）
 ```
 

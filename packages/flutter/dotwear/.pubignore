@@ -1,0 +1,5 @@
+# pub.dev に公開するときに除くもの。.pubignore があると .gitignore は使われないので、
+# git に入れない生成物（lib/src/generated・fonts。ADR-033）はパッケージに含まれる
+.dart_tool/
+build/
+test/

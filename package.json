@@ -1,6 +1,6 @@
 {
   "name": "dotwear",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.21.0",
@@ -19,6 +19,9 @@
     "test:swift": "turbo run build --filter='@dotwear/swift*' && pnpm --filter '@dotwear/swift*' --workspace-concurrency=1 run test:swift && pnpm --filter @dotwear/swift run test:ios && pnpm --filter @dotwear/demo-ios run test:ios",
     "dev:ios": "turbo run build --filter=@dotwear/demo-ios^... && pnpm --filter @dotwear/demo-ios run dev",
     "test:android": "turbo run build --filter=@dotwear/android && pnpm --filter @dotwear/android run test:android",
+    "dev:react-native": "turbo run build --filter=@dotwear/demo-react-native^... && pnpm --filter @dotwear/demo-react-native run dev",
+    "test:flutter": "turbo run build --filter=@dotwear/flutter && pnpm --filter @dotwear/flutter run test:flutter && cd apps/demo-flutter && flutter test",
+    "dev:flutter": "turbo run build --filter=@dotwear/flutter && cd apps/demo-flutter && flutter run",
     "dev:android": "turbo run build --filter=@dotwear/android && open -a 'Android Studio' packages/android",
     "release:version": "pnpm --filter @dotwear/release run set-version",
     "release:export-public": "pnpm --filter @dotwear/release run export-public",

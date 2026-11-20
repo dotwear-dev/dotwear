@@ -11,8 +11,9 @@ const icons = await loadIconMeta();
   <article class="prose">
     <h1>Pixel-art UI for everyday apps.</h1>
     <p class="lead">
-      Dotwear is a design system of pixel-art icons and UI styles for the web and iOS. Every icon is drawn once on a
-      grid and generated for each platform, so your web app and your iOS app look the same — down to the pixel.
+      Dotwear is a design system of pixel-art icons and UI styles for the web, iOS, React Native and Flutter. Every icon is drawn
+      once on a grid and generated for each platform, so your web app and your mobile app look the same — down to the
+      pixel.
     </p>
     <p class="hero-icons" aria-hidden="true">
       {icons.map((i) => <DotwearIcon icon={byName[i.name as DotwearIconName]} scale={2} />)}
@@ -46,10 +47,12 @@ const icons = await loadIconMeta();
       <tbody>
         <tr><td>Web</td><td><code>@dotwear/icons</code></td><td><code>@dotwear/web</code></td></tr>
         <tr><td>iOS (SwiftUI)</td><td><code>DotwearIcons</code></td><td><code>Dotwear</code></td></tr>
+        <tr><td>React Native</td><td><code>@dotwear/react-native-icons</code></td><td><code>@dotwear/react-native</code></td></tr>
+        <tr><td>Flutter</td><td><code>dotwear_icons</code></td><td><code>dotwear</code></td></tr>
       </tbody>
     </table>
     <p>
-      Both UI packages ship the icons, the design tokens, the bundled pixel font and the four core components: Button,
+      The UI packages ship the icons, the design tokens, the bundled pixel font and the four core components: Button,
       TextField, Card and Toggle.
     </p>
 

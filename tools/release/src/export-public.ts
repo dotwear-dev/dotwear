@@ -46,7 +46,7 @@ export function findForbidden(text: string, file: string): string[] {
 }
 
 /** 検査の対象にするテキストファイル（バイナリは除く） */
-const GUARD_EXT = new Set([".md", ".mdx", ".txt", ".ts", ".tsx", ".js", ".mjs", ".json", ".yml", ".yaml", ".swift", ".kt", ".kts", ".astro", ".css", ".html", ".toml", ".properties"]);
+const GUARD_EXT = new Set([".md", ".mdx", ".txt", ".ts", ".tsx", ".js", ".mjs", ".json", ".yml", ".yaml", ".swift", ".kt", ".kts", ".astro", ".css", ".html", ".toml", ".properties", ".dart"]);
 
 /** 丸ごと除くフォルダ：Kit（Free と Pro の全部。認証付きでだけ配る。ADR-023） */
 export const PRIVATE_DIRS = ["packages/kit/", "packages/swift-kit/", "packages/android/kit/"];

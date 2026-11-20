@@ -1,12 +1,16 @@
 // コード例を、実際にコンパイルされるソースから取り出す。
 //   Web   … src/snippets/*.tsx（astro check で型を検査する）
 //   Swift … packages/swift/Tests/DocSnippetsTests/Snippets.swift（swift test でコンパイルする）
+//   React Native … apps/demo-react-native/doc-snippets/snippets.tsx（デモアプリの typecheck で型を、test で描画を検査する）
+//   Flutter … apps/demo-flutter/doc_snippets/snippets.dart（デモアプリの flutter analyze と flutter test で検査する）
 // ページに直接コードを書くと、API を変えたときに例だけが古くなって気づけないため、この形にしている。
 //
 // 書式：`// snippet:<名前>` の次の行から `// end-snippet` の前の行までを取り出し、共通の字下げを取り除く。
 // JSX の中では `{/* snippet:<名前> */}` と `{/* end-snippet */}` も使える。
 // `//+ ` で始まる行はコメントを外して表示する（テストのターゲットには書けない @main などを見せるため）
 import swiftSource from "../../../../packages/swift/Tests/DocSnippetsTests/Snippets.swift?raw";
+import reactNativeSource from "../../../demo-react-native/doc-snippets/snippets.tsx?raw";
+import flutterSource from "../../../demo-flutter/doc_snippets/snippets.dart?raw";
 
 // Vite の glob で、src/snippets/ の Web のコード例をすべて文字列として読む
 const webSources = import.meta.glob<string>("../snippets/*.tsx", { query: "?raw", import: "default", eager: true });
@@ -31,6 +35,16 @@ export function extractSnippet(source: string, name: string, origin: string): st
 /** Swift のコード例 */
 export function swift(name: string): string {
   return extractSnippet(swiftSource, name, "Snippets.swift");
+}
+
+/** React Native のコード例 */
+export function reactNative(name: string): string {
+  return extractSnippet(reactNativeSource, name, "doc-snippets/snippets.tsx");
+}
+
+/** Flutter のコード例 */
+export function flutter(name: string): string {
+  return extractSnippet(flutterSource, name, "doc_snippets/snippets.dart");
 }
 
 /** Web のコード例。名前はすべてのファイルから探す（同じ名前が 2 つあればエラー） */

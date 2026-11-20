@@ -4,27 +4,42 @@ import { byName, DotwearIcon } from "@dotwear/web";
 import CodeTabs from "../../components/CodeTabs.astro";
 import Base from "../../layouts/Base.astro";
 import { loadPalette } from "../../lib/source";
-import { swift, web } from "../../lib/snippets";
+import { flutter, reactNative, swift, web } from "../../lib/snippets";
 
 const palette = await loadPalette();
-const both = (name: string) => [
+// 同じ名前のコード例を、すべてのプラットフォームのタブに並べる
+const all = (name: string) => [
   { platform: "web" as const, code: web(name) },
   { platform: "swift" as const, code: swift(name) },
+  { platform: "react-native" as const, code: reactNative(name) },
+  { platform: "flutter" as const, code: flutter(name) },
 ];
+// Flutter のパレット名（DotwearPalettes.retroGreen。予約語は末尾に _）
+const dartName = (name: string) => {
+  const camel = name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+  return camel === "default" ? "default_" : camel;
+};
 ---
 
 <Base title="Using icons" description="Size, color, accessibility labels, grids and palettes for Dotwear icons.">
   <article class="prose">
     <h1>Using icons</h1>
     <p>
-      An icon is a definition object (<code>dwSave</code> on the web, <code>.save</code> in Swift) that you pass to
-      <code>DotwearIcon</code>. Unused icons are tree-shaken from web bundles.
+      An icon is a definition object (<code>dwSave</code> on the web and in React Native, <code>.save</code> in Swift,
+      <code>DotwearIcons.save</code> in Flutter)
+      that you pass to <code>DotwearIcon</code>. Unused icons are tree-shaken from web bundles.
     </p>
     <CodeTabs
       label="Imports"
       items={[
         { platform: "web", code: web("icons-only"), note: "With @dotwear/web, import everything from \"@dotwear/web\" instead." },
         { platform: "swift", lang: "swift", code: "import DotwearIcons   // or: import Dotwear" },
+        {
+          platform: "react-native",
+          code: reactNative("icons-only"),
+          note: "With @dotwear/react-native, import everything from \"@dotwear/react-native\" instead.",
+        },
+        { platform: "flutter", lang: "dart", code: "import 'package:dotwear_icons/dotwear_icons.dart'; // or: package:dotwear/dotwear.dart" },
       ]}
     />
 
@@ -32,49 +47,55 @@ const both = (name: string) => [
     <p>
       <code>scale</code> multiplies the grid: a 16-grid icon is 16 px (pt) at <code>scale 1</code>, 32 at 2, 48 at 3.
       Only integers are accepted, because a fractional scale would put cell edges between device pixels and blur them.
-      On the web a non-integer is rounded down with a console warning; in Swift the parameter is an <code>Int</code>.
+      On the web and in React Native a non-integer is rounded down with a console warning; in Swift and Flutter the
+      parameter is an <code>Int</code>. In React Native and Flutter each cell is also rounded to whole device pixels, so icons stay sharp on
+      fractional densities such as 2.625×.
     </p>
     <p class="demo-row" aria-hidden="true">
       {[1, 2, 3, 4].map((s) => <DotwearIcon icon={byName.save} scale={s} />)}
     </p>
-    <CodeTabs label="Scale" items={both("icon-basic")} />
+    <CodeTabs label="Scale" items={all("icon-basic")} />
 
     <h2>Color</h2>
     <p>
       The main color follows the text color: <code>currentColor</code> on the web, <code>foregroundStyle</code> in
-      SwiftUI. Palette colors (below) are separate.
+      SwiftUI. React Native has no inherited text color, so pass <code>color</code>, or set it for a subtree with
+      <code>&lt;DotwearIconProvider color&gt;</code> (<code>&lt;DotwearTheme&gt;</code> sets it to the theme's
+      foreground). In Flutter it follows <code>IconTheme</code>, like a Material <code>Icon</code>. Palette colors (below)
+      are separate.
     </p>
-    <CodeTabs label="Color" items={both("icon-color")} />
+    <CodeTabs label="Color" items={all("icon-color")} />
 
     <h2 id="accessibility-label">Accessibility label</h2>
     <p>
       Without a label an icon is decorative and hidden from screen readers — right when it sits next to text. Give it a
       label when the icon alone carries meaning.
     </p>
-    <CodeTabs label="Label" items={both("icon-label")} />
+    <CodeTabs label="Label" items={all("icon-label")} />
 
     <h2>Grids</h2>
     <p>
       Every icon has a 16 × 16 drawing. An icon can also have hand-tuned drawings for the 12 and 24 grids; ask for one
       with <code>grid</code>. If the icon has no drawing for that grid, the 16 grid is used.
     </p>
-    <CodeTabs label="Grid" items={both("icon-grid")} />
+    <CodeTabs label="Grid" items={all("icon-grid")} />
 
     <h2>Choosing an icon by name</h2>
     <p>
       For icons chosen at run time (from data or settings), look them up by name. On the web this includes every icon in
       the bundle, so prefer direct imports when you know the icon in advance.
     </p>
-    <CodeTabs label="By name" items={both("icon-by-name")} />
+    <CodeTabs label="By name" items={all("icon-by-name")} />
 
     <h2 id="palettes">Palettes</h2>
     <p>
       Multi-color icons paint their extra colors from palette slots 2–9. Switch the palette for a whole subtree with
-      <code>data-dw-palette</code> (web) or <code>.dotwearPalette()</code> (SwiftUI).
+      <code>data-dw-palette</code> (web), <code>.dotwearPalette()</code> (SwiftUI) or
+      <code>&lt;DotwearIconProvider palette&gt;</code> (React Native) or <code>DotwearIconTheme(palette:)</code> (Flutter).
     </p>
     <table>
       <thead>
-        <tr><th>Palette</th><th>Web</th><th>Swift</th><th>Slots</th></tr>
+        <tr><th>Palette</th><th>Web</th><th>Swift</th><th>React Native</th><th>Flutter</th><th>Slots</th></tr>
       </thead>
       <tbody>
         {
@@ -83,6 +104,8 @@ const both = (name: string) => [
               <td>{p.name}</td>
               <td><code>data-dw-palette="{p.name}"</code></td>
               <td><code>.{p.swiftName}</code></td>
+              <td><code>palettes["{p.name}"]</code></td>
+              <td><code>DotwearPalettes.{dartName(p.name)}</code></td>
               <td>
                 {Object.entries(p.slots).map(([slot, hex]) => (
                   <span class="swatch" title={`${slot}: ${hex}`}>
@@ -96,7 +119,7 @@ const both = (name: string) => [
         }
       </tbody>
     </table>
-    <CodeTabs label="Palette" items={both("icon-palette")} />
+    <CodeTabs label="Palette" items={all("icon-palette")} />
 
     <h2>SVG files</h2>
     <p>

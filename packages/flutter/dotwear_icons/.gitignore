@@ -1,0 +1,5 @@
+# ジェネレーターの出力（pnpm generate flutter。ADR-033）と、公開するときにコピーするライセンス文。
+# git には入れないが pub.dev のパッケージには含める（.pubignore がこのファイルの代わりに使われる）
+lib/src/generated/
+test/generated/
+LICENSE

@@ -1,0 +1,69 @@
+{
+  "name": "@dotwear/react-native",
+  "version": "0.2.0",
+  "description": "Dotwear UI for React Native: design tokens, theme, bundled pixel font (re-exports @dotwear/react-native-icons)",
+  "keywords": [
+    "design-system",
+    "pixel",
+    "pixel-art",
+    "react-native",
+    "design-tokens",
+    "ui"
+  ],
+  "license": "MIT",
+  "homepage": "https://dotwear.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dotwear-dev/dotwear.git",
+    "directory": "packages/react-native"
+  },
+  "bugs": {
+    "url": "https://github.com/dotwear-dev/dotwear/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./fonts/*": "./dist/generated/fonts/*"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "generate": "dotwear-generator generate react-native",
+    "build": "dotwear-generator generate react-native && tsc -p tsconfig.build.json && rm -rf dist/generated/fonts && cp -R generated/fonts dist/generated/fonts",
+    "test": "jest",
+    "typecheck": "tsc -p tsconfig.json",
+    "prepack": "cp ../../LICENSE LICENSE"
+  },
+  "dependencies": {
+    "@dotwear/react-native-icons": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-native": ">=0.78"
+  },
+  "devDependencies": {
+    "@dotwear/generator": "workspace:*",
+    "@react-native/babel-preset": "0.88.1",
+    "@react-native/jest-preset": "0.88.1",
+    "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.20.0",
+    "@types/react": "^19.3.0",
+    "jest": "^30.5.2",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "test-renderer": "^1.3.1",
+    "typescript": "^7.0.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

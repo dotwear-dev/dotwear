@@ -8,7 +8,9 @@
         "$TURBO_ROOT$/icons/**",
         "$TURBO_ROOT$/brand/**",
         "$TURBO_ROOT$/tokens/**",
-        "$TURBO_ROOT$/packages/swift/Tests/DocSnippetsTests/**"
+        "$TURBO_ROOT$/packages/swift/Tests/DocSnippetsTests/**",
+        "$TURBO_ROOT$/apps/demo-react-native/doc-snippets/**",
+        "$TURBO_ROOT$/apps/demo-flutter/doc_snippets/**"
       ],
       "outputs": ["dist/**"]
     },

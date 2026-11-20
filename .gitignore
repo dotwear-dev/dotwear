@@ -10,6 +10,12 @@ packages/*/generated/
 # Swift の生成物。配布専用リポジトリへ同期するときにだけ含める（ADR-017）
 packages/swift/Sources/*/Generated/
 packages/swift/Tests/*/Generated/
+# Flutter の生成物とライセンス文は、各パッケージの .gitignore に書く（packages/flutter/*/.gitignore）。
+# pub は .pubignore でそのフォルダの .gitignore だけを置き換え、上のフォルダの .gitignore はそのまま効くので、
+# ここに書くと pub.dev に公開するパッケージから生成物が抜けてしまう
+# Flutter のビルド結果と手元の設定
+.dart_tool/
+build/
 # ブランド素材の出力（pnpm generate brand）
 /generated/
 
@@ -20,3 +26,8 @@ packages/swift/Tests/*/Generated/
 # npm に公開するときにリポジトリ直下からコピーするライセンス文（prepack）
 packages/icons/LICENSE
 packages/web/LICENSE
+packages/react-native-icons/LICENSE
+packages/react-native/LICENSE
+
+# Expo の開発サーバーが作る手元の設定（apps/demo-react-native）
+.expo/

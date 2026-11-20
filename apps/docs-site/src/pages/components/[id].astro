@@ -1,13 +1,13 @@
 ---
 // コンポーネントのページ（1 コンポーネント 1 ページ）。中身は src/data/components.ts、
-// コード例は src/snippets/components.tsx（Web）と Snippets.swift（iOS）から取り出す。
+// コード例は src/snippets/components.tsx（Web）、Snippets.swift（iOS）、doc-snippets/snippets.tsx（React Native）、doc_snippets/snippets.dart（Flutter）から取り出す。
 // 見本は @dotwear/web の React の部品をそのまま置く（見た目は components.css）
 import "@dotwear/web/components.css";
 import CodeTabs from "../../components/CodeTabs.astro";
 import { ComponentDemo } from "../../components/ComponentDemo";
 import { COMPONENTS, type ComponentDoc } from "../../data/components";
 import Base from "../../layouts/Base.astro";
-import { swift, web } from "../../lib/snippets";
+import { flutter, reactNative, swift, web } from "../../lib/snippets";
 
 export function getStaticPaths() {
   return COMPONENTS.map((doc) => ({ params: { id: doc.id }, props: { doc } }));
@@ -34,6 +34,8 @@ const { doc } = Astro.props as { doc: ComponentDoc };
             items={[
               { platform: "web", code: web(s.name) },
               { platform: "swift", code: swift(s.name) },
+              { platform: "react-native", code: reactNative(s.name) },
+              { platform: "flutter", code: flutter(s.name) },
             ]}
           />
         </>
@@ -62,6 +64,18 @@ const { doc } = Astro.props as { doc: ComponentDoc };
     <table>
       <thead><tr><th>API</th><th>Description</th></tr></thead>
       <tbody>{doc.swiftApi.map((a) => <tr><td><code>{a.api}</code></td><td>{a.description}</td></tr>)}</tbody>
+    </table>
+
+    <h2>React Native API</h2>
+    <table>
+      <thead><tr><th>Prop</th><th>Description</th></tr></thead>
+      <tbody>{doc.reactNativeApi.map((a) => <tr><td><code>{a.api}</code></td><td>{a.description}</td></tr>)}</tbody>
+    </table>
+
+    <h2>Flutter API</h2>
+    <table>
+      <thead><tr><th>Parameter</th><th>Description</th></tr></thead>
+      <tbody>{doc.flutterApi.map((a) => <tr><td><code>{a.api}</code></td><td>{a.description}</td></tr>)}</tbody>
     </table>
 
     <h2>Accessibility</h2>

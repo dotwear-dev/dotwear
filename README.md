@@ -1,6 +1,6 @@
 # Dotwear
 
-**Pixel-art icons and UI for business apps — generated for Web, iOS and Android from one source of truth.**
+**Pixel-art icons and UI for business apps — generated for Web, iOS, Android, React Native and Flutter from one source of truth.**
 
 Dotwear makes ordinary apps (forms, lists, settings) look pixel-styled without giving up accessibility. Icons are drawn on a grid once and generated for every platform with integer scaling only, so edges never blur.
 
@@ -8,6 +8,8 @@ Dotwear makes ordinary apps (forms, lists, settings) look pixel-styled without g
 |---|---|
 | Web | [`@dotwear/icons`](packages/icons) · [`@dotwear/web`](packages/web) |
 | iOS (SwiftUI) | [`dotwear-swift`](https://github.com/dotwear-dev/dotwear-swift) — products `DotwearIcons`, `Dotwear` (add this URL in Swift Package Manager; the source lives in [`packages/swift`](packages/swift)) |
+| React Native | [`@dotwear/react-native-icons`](packages/react-native-icons) · [`@dotwear/react-native`](packages/react-native) |
+| Flutter | [`dotwear_icons`](packages/flutter/dotwear_icons) · [`dotwear`](packages/flutter/dotwear) (pub.dev) |
 | Android (Compose) | [`dev.dotwear:dotwear-icons` · `dev.dotwear:dotwear-compose`](packages/android) (not on Maven Central yet) |
 
 - The UI is a *style on top of* the standard controls (`ButtonStyle`, `toggleable`, `<button>`), so VoiceOver, TalkBack, Dynamic Type and keyboard navigation keep working.
