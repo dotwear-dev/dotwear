@@ -185,9 +185,10 @@ MVP の対象は Button、TextField、Card、Toggle（Checkbox）。
 **公開の流れ**
 1. `pnpm release:version 0.1.0`：リポジトリ直下の `version` を、npm の各パッケージと `packages/android/gradle.properties` に書き写す（全配布物で同じ番号。ADR-020）
 2. コミットしてタグ `v0.1.0` を push すると、`.github/workflows/release.yml` が公開する
-   - npm：`@dotwear/icons`・`@dotwear/web`（provenance 付き。ライセンス文は prepack でリポジトリ直下からコピー）
+   - npm：`@dotwear/icons`・`@dotwear/web` を**段階公開**で候補として置く（Trusted Publishing でトークンなし。provenance 付き。ライセンス文は prepack でリポジトリ直下からコピー）。メンテナーが npm の Staged Packages の画面か `npm stage approve` で承認すると公開される
    - Maven Central：`dev.dotwear:dotwear-icons`・`dotwear-compose`（`com.vanniktech.maven.publish`。署名は鍵があるときだけ）。リポジトリの変数 `PUBLISH_MAVEN` が `true` のときだけ公開する
    - Swift：`pnpm release:export-swift` で書き出し、単体で `swift build` できることを確かめてから `dotwear-dev/dotwear-swift` に push してタグを付ける。配布用の `Package.swift` はテスト用の依存を含まない（SPM はテストだけの依存も利用者の側で取得するため）
+   - GitHub の Releases：npm と Swift が済んだら、`docs/releases/v<版番号>.md` を本文にして作る
 3. 手動実行（workflow_dispatch）は既定で dry-run。何も公開せずに、公開できる状態かだけを確かめる
 - ドキュメントサイトのビルドは `pnpm --filter @dotwear/docs-site run build`、出力は `apps/docs-site/dist`（静的な HTML）
   - Cloudflare Pages に出す（`.github/workflows/site.yml`）。開発用の検査ページ（`/dev/`）は出す直前に消す

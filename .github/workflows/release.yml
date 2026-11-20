@@ -2,7 +2,7 @@
 #   - 手動で実行（workflow_dispatch）：既定は dry-run。何も公開せず、公開できる状態かだけを確かめる
 #   - タグ v<版番号> を push：本番の公開。タグとリポジトリ直下の package.json の version が一致しないと止める
 # 本番に必要な secrets（各アカウントを用意してから設定する）：
-#   NPM_TOKEN                                     npm の @dotwear 組織に公開できるトークン
+#   （npm はトークンを使わない。npm 側で Trusted Publishing に dotwear-dev/dotwear の release.yml を登録してある。ADR-031）
 #   （Maven Central への公開は保留中。ADR-022。再開するときは、リポジトリの変数 PUBLISH_MAVEN を true にして次を設定する）
 #   MAVEN_CENTRAL_USERNAME / MAVEN_CENTRAL_PASSWORD  Maven Central（Central Portal）のトークン
 #   SIGNING_IN_MEMORY_KEY / SIGNING_IN_MEMORY_KEY_PASSWORD  Maven の成果物に署名する GPG の鍵
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # npm の provenance（どのソースから作ったかの証明）に使う
+      id-token: write # Trusted Publishing の認証と provenance（どのソースから作ったかの証明）に使う
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -60,13 +60,18 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
-      - name: Publish to npm
+      # 段階公開（ADR-031）：CI は npm に「公開の候補」を置くところまで。公開はメンテナーが npm の画面か
+      # `npm stage approve` で 2FA を通して承認したときに行われる。乗っ取られた CI だけでは公開できないようにするため。
+      # 認証は Trusted Publishing（OIDC）なのでトークンは使わない。npm stage は npm 12 以降のコマンド
+      - run: npm install -g npm@12
+      - name: Stage on npm
         run: |
-          flags="--access public --no-git-checks"
+          # pnpm pack で workspace:* を実際の版番号に置き換えてから、できた tarball を候補として置く
+          out="$RUNNER_TEMP/npm-packages"
+          for pkg in icons web; do (cd "packages/$pkg" && pnpm pack --pack-destination "$out"); done
+          flags="--access public --provenance"
           if [ "$DRY_RUN" = "true" ]; then flags="$flags --dry-run"; fi
-          pnpm --filter @dotwear/icons --filter @dotwear/web publish $flags
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          for tgz in "$out"/*.tgz; do npm stage publish "$tgz" $flags; done
 
   maven:
     needs: version
@@ -137,7 +142,8 @@ jobs:
           git tag "$version"
           git push origin HEAD --tags
 
-  # GitHub の Releases に載せる（npm と Swift の公開が両方済んでから。片方でも失敗したら作らない）。
+  # GitHub の Releases に載せる（npm への候補の配置と Swift の公開が両方済んでから。片方でも失敗したら作らない）。
+  # npm は段階公開なので、Release ができた時点では npm の承認待ちのことがある。承認すれば Release の案内どおりに入れられる。
   # 本文は docs/releases/v<版番号>.md（利用者向けに英語で書く）。なければ前のタグからのコミットの一覧だけになる
   github-release:
     needs: [version, npm, swift]
