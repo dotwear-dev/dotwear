@@ -26,16 +26,17 @@ function expectScaledLogo(svg: string, grid: readonly string[], size: number, sc
       const ch = inside ? grid[gy]![gx]! : ".";
       const want = ch === "#" ? [...rgb(colors.fg), 255] : ch === "2" ? [...rgb(colors.brand), 255] : background ? [...rgb(background), 255] : [0, 0, 0, 0];
       const i = (y * size + x) * 4;
-      const got = [...image.pixels.subarray(i, i + 4)];
-      // 透明なピクセルは色を問わない
-      const same = want[3] === 0 ? got[3] === 0 : got.every((v, k) => v === want[k]);
-      if (!same) bad.push(`(${x}, ${y}) = ${got.join(",")}、期待は ${ch}`);
+      const px = image.pixels;
+      // 透明なピクセルは色を問わない。1 ピクセルごとに配列を作ると CI で 5 秒を超えるので、添字で直接比べる
+      const same = want[3] === 0 ? px[i + 3] === 0 : px[i] === want[0] && px[i + 1] === want[1] && px[i + 2] === want[2] && px[i + 3] === want[3];
+      if (!same) bad.push(`(${x}, ${y}) = ${[...px.subarray(i, i + 4)].join(",")}、期待は ${ch}`);
     }
   }
   expect(bad.slice(0, 5)).toEqual([]);
 }
 
-describe("サイトのアイコン", () => {
+// resvg での描画は CI の遅い runner では数秒かかることがあるので、時間に余裕を持たせる（既定は 5 秒）
+describe("サイトのアイコン", { timeout: 30_000 }, () => {
   it("favicon（32px の PNG）は 16 マスのロゴを 2 倍にしたもの", () => {
     expectScaledLogo(centeredLogo(logo.sizes["16"]!, colors, 32, false), logo.sizes["16"]!, 32, 2, 0);
   });
