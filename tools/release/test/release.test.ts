@@ -98,6 +98,13 @@ describe("distPackageSwift", () => {
     expect(pkg).not.toContain("DotwearTestSupport");
     expect(pkg).toContain('.library(name: "Dotwear", targets: ["Dotwear"])');
   });
+
+  it("開発用の Package.swift と同じ resources を持つ（ないと同梱のフォントを読めずビルドできない）", async () => {
+    const dev = await readFile(path.join(REPO_ROOT, "packages/swift/Package.swift"), "utf8");
+    const resources = dev.match(/resources: \[[^\]]*\]/g) ?? [];
+    expect(resources.length).toBeGreaterThan(0);
+    for (const r of resources) expect(distPackageSwift()).toContain(r);
+  });
 });
 
 

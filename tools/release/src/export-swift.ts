@@ -8,6 +8,7 @@ import { cp, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { findRepoRoot } from "./repo.js";
 
+// 開発用の Package.swift と同じ resources を書く。ないと Bundle.module が作られず、同梱のフォント（ADR-026）を読むコードがビルドできない
 /** 配布するターゲット（Sources/ の下のフォルダ名）。DotwearTestSupport はテスト専用なので含めない */
 export const SWIFT_TARGETS = ["DotwearIcons", "Dotwear"] as const;
 
@@ -28,7 +29,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "DotwearIcons"),
-        .target(name: "Dotwear", dependencies: ["DotwearIcons"]),
+        .target(name: "Dotwear", dependencies: ["DotwearIcons"], resources: [.copy("Generated/Fonts")]),
     ]
 )
 `;
