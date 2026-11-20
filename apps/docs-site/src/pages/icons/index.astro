@@ -1,0 +1,16 @@
+---
+import IconGallery from "../../components/IconGallery";
+import Base from "../../layouts/Base.astro";
+import { loadIconMeta, loadPaletteThemes } from "../../lib/source";
+
+// 一覧は元データ（icons/*/icon.json）から作る。タグやカテゴリは定義オブジェクトに入っていないため
+const icons = await loadIconMeta();
+const themes = await loadPaletteThemes();
+---
+
+<Base title="Icon set" description="Browse Dotwear's pixel-art icons. Search, then copy the code or the SVG.">
+  <h1>Icon set</h1>
+  <p>Select an icon to copy its code or SVG. Scales are whole numbers only, so edges stay sharp at every size. See <a href="/icons/usage/">Using icons</a> for details.</p>
+  <!-- 一覧は静的な HTML として出し、検索などの操作は読み込み後に有効になる -->
+  <IconGallery client:load icons={icons} themes={themes} />
+</Base>

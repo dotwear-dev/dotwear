@@ -1,0 +1,63 @@
+---
+// Playwright の検査用ページ（e2e/components.spec.ts）。検索エンジンには載せない。
+// React の部品（@dotwear/web）を文字なしで並べ、外装（枠・二重線・影・フォーカスリング）をドット単位で検査する。
+// 背景は部品のどの色とも違う緑にして、「何も描かれていないマス」を見分けられるようにする
+import "@dotwear/web/tokens.css";
+import "@dotwear/web/components.css";
+import { DotwearButton, DotwearCard, DotwearTextField, DotwearToggle } from "@dotwear/web";
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>components test</title>
+    <!-- React の部品にも効くように、Astro のスコープを付けない -->
+    <style is:global>
+      body {
+        margin: 0;
+        background: #00ff00;
+      }
+      /* 位置を整数の px に固定する */
+      #components-test {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 16px;
+        width: 480px;
+      }
+      /* 二重線をなくしたテーマ（一重の枠に戻ることの検査） */
+      .single {
+        --dw-shape-border-gap: 0;
+        --dw-shape-border-inner-width: 0;
+      }
+      .wide {
+        width: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="components-test">
+      <DotwearButton data-case="btn-primary" />
+      <DotwearButton data-case="btn-secondary" variant="secondary" />
+      <DotwearButton data-case="btn-danger" variant="danger" />
+      <DotwearButton data-case="btn-ghost" variant="ghost" />
+      <DotwearButton data-case="btn-small" variant="secondary" size="small" />
+      <DotwearButton data-case="btn-large" variant="secondary" size="large" />
+      <DotwearButton data-case="btn-disabled" variant="secondary" disabled />
+      <DotwearButton data-case="btn-focus" variant="secondary" />
+      <DotwearCard data-case="card" />
+      <DotwearCard data-case="card-flat" variant="flat" />
+      <div class="single"><DotwearCard data-case="card-single" /></div>
+      <DotwearTextField className="wide" data-case="field" label="a" />
+      <DotwearTextField className="wide" data-case="field-error" label="a" error="e" />
+      <DotwearToggle data-case="switch-off" aria-label="off" />
+      <DotwearToggle data-case="switch-on" aria-label="on" defaultChecked />
+      <DotwearToggle data-case="checkbox-off" variant="checkbox" aria-label="off" />
+      <DotwearToggle data-case="checkbox-on" variant="checkbox" aria-label="on" defaultChecked />
+      <DotwearToggle data-case="checkbox-disabled-on" variant="checkbox" aria-label="disabled" defaultChecked disabled />
+    </div>
+  </body>
+</html>

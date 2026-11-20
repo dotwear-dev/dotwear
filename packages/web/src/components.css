@@ -1,0 +1,466 @@
+/*
+ * Dotwear の部品の見た目（@dotwear/web/components.css）。React の部品（DotwearButton など）は、
+ * 標準の要素にここのクラス名を付けるだけ。React を使わないときも、同じクラス名で使える。
+ * 値はすべてトークンの CSS 変数（tokens.css）から取る。仕様は docs/components/*.md。
+ *
+ * 外装（階段状の角・枠線・影・フォーカスリング）の描き方（ADR-028）：
+ *   - ::before を「枠線の内側」の大きさに置き、地の色で塗る。
+ *   - 枠線・フォーカスリング・影は、その ::before の矩形を 1 ドット単位でずらした box-shadow を重ねて描く。
+ *     縦と横にだけずらした矩形を重ねると、斜めの角が欠けて階段になる（ずらす量はすべて整数 px なのでにじまない）。
+ *     上に書いた影ほど手前に描かれるので、枠線 → フォーカスリング → 影 の順に書く。
+ *   - 二重線の内の線（ADR-027）は ::after の border で描く。角は階段にしない（外の階段より内側に来るため。iOS・Android と同じ）。
+ *   - 形の段数と枠線の太さは、ここに書いた影の並びで決まる（標準の 1 段・1 ドットと、large のボタンの 2 段・2 ドット）。
+ *     そのため shape.border-width と shape.corner-step を上書きしても、Web の部品の形は変わらない。
+ *     色・pixel-unit・二重線（border-gap・border-inner-width）は上書きできる。
+ *   - 部品の箱は「外の線の外側」から「右と下の影」までを含む。影の分も場所をとるので、押して沈んでも周りが動かない。
+ */
+
+.dw-chrome {
+  /* 1 ドット */
+  --_d: var(--dw-shape-pixel-unit);
+  /* 外の線の太さ（px） */
+  --_ring: var(--_d);
+  /* 右と下に空けておく影の場所。影がない部品は 0 */
+  --_shadow-space: var(--_d);
+  --_gap: calc(var(--dw-shape-border-gap) * var(--_d));
+  --_inner-width: calc(var(--dw-shape-border-inner-width) * var(--_d));
+  /* 外の線の外側から、内の線の内側までの厚さ。中身はここより内側に置く */
+  --_frame: calc(var(--_ring) + var(--_gap) + var(--_inner-width));
+  --_fill: var(--dw-color-bg);
+  --_border: var(--dw-color-border);
+  --_inner: var(--_border);
+  --_shadow: var(--dw-color-border);
+  /* フォーカスリング。ふだんは透明にしておき、フォーカスのときだけ色を入れる（影の並びは変えない） */
+  --_focus: transparent;
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+}
+
+.dw-chrome::before,
+.dw-chrome::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+/* 枠線の内側の地。枠線・フォーカスリング・影はこの矩形の box-shadow */
+.dw-chrome::before {
+  top: var(--_ring);
+  left: var(--_ring);
+  right: calc(var(--_ring) + var(--_shadow-space));
+  bottom: calc(var(--_ring) + var(--_shadow-space));
+  background: var(--_fill);
+  /* 1 段・1 ドット */
+  box-shadow:
+    /* 外の線：上下左右に 1 ドットずらす（角の 1 ドットが欠けて 1 段の階段になる） */
+    0 calc(-1 * var(--_d)) 0 0 var(--_border),
+    0 var(--_d) 0 0 var(--_border),
+    calc(-1 * var(--_d)) 0 0 0 var(--_border),
+    var(--_d) 0 0 0 var(--_border),
+    /* フォーカスリング：外の線の 1 ドット外側。角は 1 段多い */
+    0 calc(-2 * var(--_d)) 0 0 var(--_focus),
+    0 calc(2 * var(--_d)) 0 0 var(--_focus),
+    calc(-2 * var(--_d)) 0 0 0 var(--_focus),
+    calc(2 * var(--_d)) 0 0 0 var(--_focus),
+    calc(-1 * var(--_d)) calc(-1 * var(--_d)) 0 0 var(--_focus),
+    var(--_d) calc(-1 * var(--_d)) 0 0 var(--_focus),
+    calc(-1 * var(--_d)) var(--_d) 0 0 var(--_focus),
+    var(--_d) var(--_d) 0 0 var(--_focus),
+    /* 影：外形（地＋外の線）を右と下に 1 ドットずらしたもの */
+    var(--_d) var(--_d) 0 0 var(--_shadow),
+    var(--_d) 0 0 0 var(--_shadow),
+    var(--_d) calc(2 * var(--_d)) 0 0 var(--_shadow),
+    0 var(--_d) 0 0 var(--_shadow),
+    calc(2 * var(--_d)) var(--_d) 0 0 var(--_shadow);
+}
+
+/* 2 段・2 ドット（large のボタン） */
+.dw-chrome--thick {
+  --_ring: calc(2 * var(--_d));
+}
+
+.dw-chrome--thick::before {
+  box-shadow:
+    /* 外の線：上下左右に 2 ドット、斜めに 1 ドットずらす（2 段の階段） */
+    0 calc(-2 * var(--_d)) 0 0 var(--_border),
+    0 calc(2 * var(--_d)) 0 0 var(--_border),
+    calc(-2 * var(--_d)) 0 0 0 var(--_border),
+    calc(2 * var(--_d)) 0 0 0 var(--_border),
+    calc(-1 * var(--_d)) calc(-1 * var(--_d)) 0 0 var(--_border),
+    var(--_d) calc(-1 * var(--_d)) 0 0 var(--_border),
+    calc(-1 * var(--_d)) var(--_d) 0 0 var(--_border),
+    var(--_d) var(--_d) 0 0 var(--_border),
+    /* フォーカスリング：3 段 */
+    0 calc(-3 * var(--_d)) 0 0 var(--_focus),
+    0 calc(3 * var(--_d)) 0 0 var(--_focus),
+    calc(-3 * var(--_d)) 0 0 0 var(--_focus),
+    calc(3 * var(--_d)) 0 0 0 var(--_focus),
+    calc(-1 * var(--_d)) calc(-2 * var(--_d)) 0 0 var(--_focus),
+    var(--_d) calc(-2 * var(--_d)) 0 0 var(--_focus),
+    calc(-1 * var(--_d)) calc(2 * var(--_d)) 0 0 var(--_focus),
+    var(--_d) calc(2 * var(--_d)) 0 0 var(--_focus),
+    calc(-2 * var(--_d)) calc(-1 * var(--_d)) 0 0 var(--_focus),
+    calc(2 * var(--_d)) calc(-1 * var(--_d)) 0 0 var(--_focus),
+    calc(-2 * var(--_d)) var(--_d) 0 0 var(--_focus),
+    calc(2 * var(--_d)) var(--_d) 0 0 var(--_focus),
+    /* 影 */
+    var(--_d) var(--_d) 0 0 var(--_shadow),
+    var(--_d) calc(-1 * var(--_d)) 0 0 var(--_shadow),
+    var(--_d) calc(3 * var(--_d)) 0 0 var(--_shadow),
+    calc(-1 * var(--_d)) var(--_d) 0 0 var(--_shadow),
+    calc(3 * var(--_d)) var(--_d) 0 0 var(--_shadow),
+    calc(2 * var(--_d)) 0 0 0 var(--_shadow),
+    0 calc(2 * var(--_d)) 0 0 var(--_shadow),
+    calc(2 * var(--_d)) calc(2 * var(--_d)) 0 0 var(--_shadow);
+}
+
+/* 二重線の内の線：外の線とすき間の分だけ内側 */
+.dw-chrome::after {
+  top: calc(var(--_ring) + var(--_gap));
+  left: calc(var(--_ring) + var(--_gap));
+  right: calc(var(--_ring) + var(--_gap) + var(--_shadow-space));
+  bottom: calc(var(--_ring) + var(--_gap) + var(--_shadow-space));
+  border: var(--_inner-width) solid var(--_inner);
+}
+
+/* 文字：DotGothic16 は 16px を 1 マスとして描かれているので、16px で使い、太字を合成させない（ADR-026） */
+.dw-button,
+.dw-field,
+.dw-toggle {
+  font-family: var(--dw-typography-family);
+  font-size: var(--dw-typography-label);
+  font-weight: normal;
+  font-synthesis: none;
+}
+
+/* ---------- ボタン（docs/components/button.md） ---------- */
+
+.dw-button {
+  /* 高さ・左右の余白・アイコンとの間隔（ドット数）。medium */
+  --_h: 16;
+  --_px: 6;
+  --_icon-gap: 3;
+  --_fg: var(--dw-color-fg);
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--_icon-gap) * var(--_d));
+  margin: 0;
+  border: 0;
+  background: none;
+  color: var(--_fg);
+  line-height: var(--dw-typography-label);
+  /* 高さは影を含めた箱の大きさ。文字が大きいときは伸びる */
+  min-height: calc(var(--_h) * var(--_d) + var(--_shadow-space));
+  /* 上下は二重線の枠の厚さだけ空ける（文字が内の線に重ならないように） */
+  padding: var(--_frame) calc(var(--_px) * var(--_d) + var(--_shadow-space)) calc(var(--_frame) + var(--_shadow-space))
+    calc(var(--_px) * var(--_d));
+  cursor: pointer;
+  text-decoration: none;
+  vertical-align: middle;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dw-button--small {
+  --_h: 12;
+  --_px: 4;
+  --_icon-gap: 2;
+}
+
+.dw-button--large {
+  --_h: 20;
+  --_px: 8;
+  --_icon-gap: 4;
+}
+
+.dw-button--primary {
+  --_fill: var(--dw-color-primary);
+  --_fg: var(--dw-color-on-primary);
+  /* 塗りが枠と同じ濃い色なので、内の線は文字と同じ色にして見えるようにする */
+  --_inner: var(--dw-color-on-primary);
+}
+
+.dw-button--secondary {
+  --_fill: var(--dw-color-bg);
+}
+
+.dw-button--danger {
+  --_fill: var(--dw-color-danger);
+  --_fg: var(--dw-color-on-primary);
+  --_inner: var(--dw-color-on-primary);
+}
+
+/* 枠線のみ。塗りも影もなく、影の場所もとらない */
+.dw-button--ghost {
+  --_fill: transparent;
+  --_shadow: transparent;
+  --_shadow-space: 0px;
+}
+
+.dw-button:focus-visible {
+  outline: none;
+  --_focus: var(--dw-color-focus);
+}
+
+/* 押したとき：影を消し、本体を 1 ドット沈める（波紋などは出さない） */
+.dw-button:active:not(:disabled, [aria-disabled="true"]) {
+  transform: translateY(var(--_d));
+  --_shadow: transparent;
+}
+
+.dw-button:disabled,
+.dw-button[aria-disabled="true"] {
+  --_fg: var(--dw-color-disabled);
+  --_border: var(--dw-color-disabled);
+  --_inner: var(--dw-color-disabled);
+  --_shadow: transparent;
+  cursor: not-allowed;
+}
+
+.dw-button:disabled:not(.dw-button--ghost),
+.dw-button[aria-disabled="true"]:not(.dw-button--ghost) {
+  --_fill: var(--dw-color-bg);
+}
+
+.dw-button__content {
+  display: inline-flex;
+  align-items: center;
+  gap: inherit;
+}
+
+/* 読み込み中：文字を見えなくして（幅は変えない）、3 つのドットを重ねる */
+.dw-button[aria-busy="true"] .dw-button__content {
+  visibility: hidden;
+}
+
+.dw-button__dots {
+  position: absolute;
+  inset: 0;
+  padding: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(2 * var(--_d));
+}
+
+.dw-button__dots > span {
+  width: calc(2 * var(--_d));
+  height: calc(2 * var(--_d));
+  background: currentColor;
+  opacity: 0.4;
+  /* なめらかに変えず、コマ送りで 1 つずつ明るくする */
+  animation: dw-loading-dot 750ms steps(1, end) infinite;
+}
+
+.dw-button__dots > span:nth-child(2) {
+  animation-delay: 250ms;
+}
+
+.dw-button__dots > span:nth-child(3) {
+  animation-delay: 500ms;
+}
+
+@keyframes dw-loading-dot {
+  0% {
+    opacity: 1;
+  }
+  33.333% {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dw-button__dots > span {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ---------- カード（docs/components/card.md） ---------- */
+
+.dw-card {
+  display: block;
+  color: var(--dw-color-fg);
+  /* 余白は外の線の外側から 6 ドット（二重線は余白の中に描くので、カードの大きさは変わらない） */
+  padding: calc(6 * var(--_d)) calc(6 * var(--_d) + var(--_shadow-space)) calc(6 * var(--_d) + var(--_shadow-space))
+    calc(6 * var(--_d));
+}
+
+/* 枠のみ（カードの中にカードを置くときなど） */
+.dw-card--flat {
+  --_shadow: transparent;
+  --_shadow-space: 0px;
+}
+
+/* ---------- 入力欄（docs/components/text-field.md） ---------- */
+
+.dw-field {
+  --_d: var(--dw-shape-pixel-unit);
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--_d));
+  color: var(--dw-color-fg);
+  line-height: var(--dw-typography-body);
+}
+
+.dw-field__box {
+  /* 入力欄に影はない */
+  --_shadow: transparent;
+  --_shadow-space: 0px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: calc(16 * var(--_d));
+  /* 文字は内の線から 4 ドット離す。上下も二重線の枠の厚さだけ空ける */
+  padding: var(--_frame) calc(var(--_frame) + 4 * var(--_d));
+}
+
+.dw-field__input {
+  /* <input> は文字幅から決まる固有の幅（size 属性の 20 文字分）を持つ。幅の広いフォントでは、それが入力欄を
+     親より広げてしまうので、固有の幅を 0 にして、親の幅に合わせて伸ばす */
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  /* フォーカスは枠の外のフォーカスリングで示す */
+  outline: none;
+}
+
+.dw-field__input::placeholder {
+  color: var(--dw-color-disabled);
+  opacity: 1;
+}
+
+.dw-field__box:focus-within {
+  --_focus: var(--dw-color-focus);
+}
+
+.dw-field--error .dw-field__box {
+  --_border: var(--dw-color-danger);
+}
+
+.dw-field--disabled {
+  color: var(--dw-color-disabled);
+}
+
+.dw-field--disabled .dw-field__box {
+  --_border: var(--dw-color-disabled);
+}
+
+.dw-field__error {
+  margin: 0;
+  color: var(--dw-color-danger);
+}
+
+/* ---------- トグル（docs/components/toggle.md） ---------- */
+
+.dw-toggle {
+  --_d: var(--dw-shape-pixel-unit);
+  display: inline-flex;
+  align-items: center;
+  gap: calc(4 * var(--_d));
+  color: var(--dw-color-fg);
+  line-height: var(--dw-typography-label);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 標準のチェックボックスは見えなくするが、フォーカスと読み上げとフォームの送信はそのまま効かせる */
+.dw-toggle__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* スイッチは、Android の設定画面と同じくラベルが左、スイッチが右 */
+.dw-toggle--switch .dw-toggle__label {
+  order: -1;
+}
+
+.dw-toggle__control {
+  --_fill: var(--dw-color-bg);
+  /* つまみ・チェックの色 */
+  --_mark: var(--dw-color-border);
+  flex: none;
+  /* 影の分を含めた大きさ。スイッチは 14 × 8、チェックボックスは 8 × 8（影を除く） */
+  width: calc(15 * var(--_d));
+  height: calc(9 * var(--_d));
+}
+
+.dw-toggle--checkbox .dw-toggle__control {
+  width: calc(9 * var(--_d));
+}
+
+/* トグルは小さいので一重の枠。::after は二重線の代わりに、つまみ・チェックに使う */
+.dw-toggle__control::after {
+  border: 0;
+  top: var(--_ring);
+  left: var(--_ring);
+  right: auto;
+  bottom: auto;
+  width: calc(6 * var(--_d));
+  height: calc(6 * var(--_d));
+}
+
+/* スイッチのつまみ：オフは左で線だけの四角、オンは右で塗りつぶし（アニメーションさせず一瞬で切り替える）。
+   4 階調では primary と border、on-primary と bg が同じ色なので、オフも塗りつぶすとオンと同じ絵になる（ADR-029） */
+.dw-toggle--switch .dw-toggle__control::after {
+  box-sizing: border-box;
+  border: var(--_d) solid var(--_mark);
+}
+
+.dw-toggle--switch .dw-toggle__input:checked + .dw-toggle__control::after {
+  left: calc(var(--_ring) + 6 * var(--_d));
+  background: var(--_mark);
+}
+
+/* チェックの形（toggle.md。6 × 6 ドット）。マスク用の SVG は整数の座標の矩形だけなので、整数倍で描けばにじまない */
+.dw-toggle--checkbox .dw-toggle__input:checked + .dw-toggle__control::after {
+  background: var(--_mark);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 6' shape-rendering='crispEdges'%3E%3Cpath d='M5 1h1v1H5zM4 2h2v1H4zM0 3h1v1H0zM3 3h2v1H3zM0 4h4v1H0zM1 5h2v1H1z'/%3E%3C/svg%3E")
+    0 0 / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 6' shape-rendering='crispEdges'%3E%3Cpath d='M5 1h1v1H5zM4 2h2v1H4zM0 3h1v1H0zM3 3h2v1H3zM0 4h4v1H0zM1 5h2v1H1z'/%3E%3C/svg%3E")
+    0 0 / 100% 100% no-repeat;
+}
+
+.dw-toggle__input:checked + .dw-toggle__control {
+  --_fill: var(--dw-color-primary);
+  --_mark: var(--dw-color-on-primary);
+}
+
+.dw-toggle__input:focus-visible + .dw-toggle__control {
+  --_focus: var(--dw-color-focus);
+}
+
+.dw-toggle:active .dw-toggle__input:not(:disabled) + .dw-toggle__control {
+  transform: translateY(var(--_d));
+  --_shadow: transparent;
+}
+
+.dw-toggle--disabled {
+  color: var(--dw-color-disabled);
+  cursor: not-allowed;
+}
+
+.dw-toggle__input:disabled + .dw-toggle__control {
+  --_border: var(--dw-color-disabled);
+  --_shadow: transparent;
+  --_mark: var(--dw-color-disabled);
+}
+
+.dw-toggle__input:disabled:checked + .dw-toggle__control {
+  --_fill: var(--dw-color-disabled);
+  --_mark: var(--dw-color-bg);
+}

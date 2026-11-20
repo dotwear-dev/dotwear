@@ -1,0 +1,16 @@
+{
+  "palette": {
+    "default": {
+      "2": { "$type": "color", "$value": "#181818" },
+      "3": { "$type": "color", "$value": "#585858" },
+      "4": { "$type": "color", "$value": "#a8a8a8" },
+      "5": { "$type": "color", "$value": "#f8f8f8" }
+    },
+    "retro-green": {
+      "2": { "$type": "color", "$value": "#0f380f" },
+      "3": { "$type": "color", "$value": "#306230" },
+      "4": { "$type": "color", "$value": "#8bac0f" },
+      "5": { "$type": "color", "$value": "#9bbc0f" }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+---
+// アクセシビリティの考え方。標準の部品に見た目を被せる方式（CLAUDE.md 最重要ルール 3）なので、何が標準のまま効くかを書く
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Accessibility" description="How Dotwear keeps VoiceOver, Dynamic Type and keyboard access working.">
+  <article class="prose">
+    <h1>Accessibility</h1>
+    <p>
+      Dotwear does not replace platform controls. It styles them. A Dotwear button in SwiftUI is still a
+      <code>Button</code>, a switch is still a <code>Toggle</code>, and a text field is still a <code>TextField</code>.
+      What the platform gives those controls for free keeps working:
+    </p>
+    <ul>
+      <li>VoiceOver names, roles and states (for example “Switch, on”)</li>
+      <li>Dynamic Type for labels</li>
+      <li>Full Keyboard Access and focus rings</li>
+      <li>Voice Control, text input and IME composition</li>
+    </ul>
+
+    <h2>What we check</h2>
+    <ul>
+      <li>Automated audits of the iOS demo app (<code>performAccessibilityAudit</code>) on every change.</li>
+      <li>Pixel-exact rendering tests for every icon on every platform.</li>
+    </ul>
+
+    <h2>Your part</h2>
+    <ul>
+      <li>Give icons a label when they carry meaning on their own (<a href="/icons/usage/#accessibility-label">how</a>).</li>
+      <li>Give icon-only buttons an accessibility label.</li>
+      <li>Keep a visible label for text fields; a placeholder is not a label.</li>
+      <li>When you customize colors, check contrast again.</li>
+    </ul>
+  </article>
+</Base>

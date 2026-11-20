@@ -1,0 +1,32 @@
+{
+  "name": "dotwear",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.21.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "validate": "pnpm --filter @dotwear/generator run validate",
+    "generate": "pnpm --filter @dotwear/generator run generate",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "dev:docs": "turbo run build --filter=@dotwear/docs-site^... && pnpm --filter @dotwear/docs-site run dev",
+    "test:e2e": "turbo run test:e2e",
+    "dev:editor": "turbo run build --filter=@dotwear/editor^... && pnpm --filter @dotwear/editor run dev",
+    "test:swift": "turbo run build --filter='@dotwear/swift*' && pnpm --filter '@dotwear/swift*' --workspace-concurrency=1 run test:swift && pnpm --filter @dotwear/swift run test:ios && pnpm --filter @dotwear/demo-ios run test:ios",
+    "dev:ios": "turbo run build --filter=@dotwear/demo-ios^... && pnpm --filter @dotwear/demo-ios run dev",
+    "test:android": "turbo run build --filter=@dotwear/android && pnpm --filter @dotwear/android run test:android",
+    "dev:android": "turbo run build --filter=@dotwear/android && open -a 'Android Studio' packages/android",
+    "release:version": "pnpm --filter @dotwear/release run set-version",
+    "release:export-public": "pnpm --filter @dotwear/release run export-public",
+    "release:export-swift": "pnpm --filter @dotwear/release run export-swift",
+    "release:export-swift-kit": "pnpm --filter @dotwear/release run export-swift-kit"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.11"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,108 @@
+---
+// アイコンの使い方（大きさ・色・読み上げ・グリッド・名前で選ぶ・パレット）
+import { byName, DotwearIcon } from "@dotwear/web";
+import CodeTabs from "../../components/CodeTabs.astro";
+import Base from "../../layouts/Base.astro";
+import { loadPalette } from "../../lib/source";
+import { swift, web } from "../../lib/snippets";
+
+const palette = await loadPalette();
+const both = (name: string) => [
+  { platform: "web" as const, code: web(name) },
+  { platform: "swift" as const, code: swift(name) },
+];
+---
+
+<Base title="Using icons" description="Size, color, accessibility labels, grids and palettes for Dotwear icons.">
+  <article class="prose">
+    <h1>Using icons</h1>
+    <p>
+      An icon is a definition object (<code>dwSave</code> on the web, <code>.save</code> in Swift) that you pass to
+      <code>DotwearIcon</code>. Unused icons are tree-shaken from web bundles.
+    </p>
+    <CodeTabs
+      label="Imports"
+      items={[
+        { platform: "web", code: web("icons-only"), note: "With @dotwear/web, import everything from \"@dotwear/web\" instead." },
+        { platform: "swift", lang: "swift", code: "import DotwearIcons   // or: import Dotwear" },
+      ]}
+    />
+
+    <h2>Size: whole numbers only</h2>
+    <p>
+      <code>scale</code> multiplies the grid: a 16-grid icon is 16 px (pt) at <code>scale 1</code>, 32 at 2, 48 at 3.
+      Only integers are accepted, because a fractional scale would put cell edges between device pixels and blur them.
+      On the web a non-integer is rounded down with a console warning; in Swift the parameter is an <code>Int</code>.
+    </p>
+    <p class="demo-row" aria-hidden="true">
+      {[1, 2, 3, 4].map((s) => <DotwearIcon icon={byName.save} scale={s} />)}
+    </p>
+    <CodeTabs label="Scale" items={both("icon-basic")} />
+
+    <h2>Color</h2>
+    <p>
+      The main color follows the text color: <code>currentColor</code> on the web, <code>foregroundStyle</code> in
+      SwiftUI. Palette colors (below) are separate.
+    </p>
+    <CodeTabs label="Color" items={both("icon-color")} />
+
+    <h2 id="accessibility-label">Accessibility label</h2>
+    <p>
+      Without a label an icon is decorative and hidden from screen readers — right when it sits next to text. Give it a
+      label when the icon alone carries meaning.
+    </p>
+    <CodeTabs label="Label" items={both("icon-label")} />
+
+    <h2>Grids</h2>
+    <p>
+      Every icon has a 16 × 16 drawing. An icon can also have hand-tuned drawings for the 12 and 24 grids; ask for one
+      with <code>grid</code>. If the icon has no drawing for that grid, the 16 grid is used.
+    </p>
+    <CodeTabs label="Grid" items={both("icon-grid")} />
+
+    <h2>Choosing an icon by name</h2>
+    <p>
+      For icons chosen at run time (from data or settings), look them up by name. On the web this includes every icon in
+      the bundle, so prefer direct imports when you know the icon in advance.
+    </p>
+    <CodeTabs label="By name" items={both("icon-by-name")} />
+
+    <h2 id="palettes">Palettes</h2>
+    <p>
+      Multi-color icons paint their extra colors from palette slots 2–9. Switch the palette for a whole subtree with
+      <code>data-dw-palette</code> (web) or <code>.dotwearPalette()</code> (SwiftUI).
+    </p>
+    <table>
+      <thead>
+        <tr><th>Palette</th><th>Web</th><th>Swift</th><th>Slots</th></tr>
+      </thead>
+      <tbody>
+        {
+          palette.map((p) => (
+            <tr>
+              <td>{p.name}</td>
+              <td><code>data-dw-palette="{p.name}"</code></td>
+              <td><code>.{p.swiftName}</code></td>
+              <td>
+                {Object.entries(p.slots).map(([slot, hex]) => (
+                  <span class="swatch" title={`${slot}: ${hex}`}>
+                    <span class="swatch-chip" style={`background:${hex}`} />
+                    {slot}
+                  </span>
+                ))}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <CodeTabs label="Palette" items={both("icon-palette")} />
+
+    <h2>SVG files</h2>
+    <p>
+      Each icon is also shipped as a plain SVG in <code>@dotwear/icons/svg/</code> (for example
+      <code>save.svg</code>, and <code>save-24.svg</code> for a 24 grid). The SVGs use
+      <code>shape-rendering="crispEdges"</code>; show them at whole-number multiples of their grid size.
+    </p>
+  </article>
+</Base>

@@ -1,0 +1,13 @@
+{
+  "name": "@dotwear/swift",
+  "private": true,
+  "description": "Swift Package の生成物を作るためだけの workspace。Swift のビルドとテストは macOS の swift / xcodebuild で行う",
+  "scripts": {
+    "build": "dotwear-generator generate swift",
+    "test:swift": "swift test",
+    "test:ios": "./scripts/test-ios.sh"
+  },
+  "devDependencies": {
+    "@dotwear/generator": "workspace:*"
+  }
+}

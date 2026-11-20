@@ -1,0 +1,57 @@
+---
+// 入れ方と最小の例。コード例は src/lib/snippets.ts でコンパイル済みのソースから取り出す
+import CodeTabs from "../components/CodeTabs.astro";
+import Base from "../layouts/Base.astro";
+import { swift, web } from "../lib/snippets";
+
+const SWIFT_REPO = "https://github.com/dotwear-dev/dotwear-swift";
+---
+
+<Base title="Installation" description="Install Dotwear for React or SwiftUI and render your first icon.">
+  <article class="prose">
+    <h1>Installation</h1>
+
+    <h2>1. Add the package</h2>
+    <CodeTabs
+      label="Install"
+      items={[
+        { platform: "web", lang: "sh", code: "npm install @dotwear/web\n\n# Icons only\nnpm install @dotwear/icons" },
+        {
+          platform: "swift",
+          lang: "swift",
+          note: `In Xcode: File › Add Package Dependencies…, enter ${SWIFT_REPO}, and add the Dotwear library (or DotwearIcons for icons only). With Package.swift:`,
+          code: `dependencies: [\n    .package(url: "${SWIFT_REPO}", from: "0.1.0"),\n],\ntargets: [\n    .target(name: "MyApp", dependencies: [\n        .product(name: "Dotwear", package: "dotwear-swift"),\n    ]),\n]`,
+        },
+      ]}
+    />
+    <p>Requirements: React 18 or later for the web; iOS 16 / macOS 13 or later and Swift 6 for SwiftUI.</p>
+
+    <h2>2. Use it</h2>
+    <CodeTabs
+      label="First example"
+      items={[
+        { platform: "web", code: web("quickstart") },
+        { platform: "swift", code: swift("quickstart") },
+      ]}
+    />
+    <ul>
+      <li>
+        <strong>Web:</strong> import these once, at the root of your app: <code>tokens.css</code> (colors and sizes as
+        CSS variables), <code>fonts.css</code> (the bundled DotGothic16 pixel font), <code>components.css</code> (the look
+        of the React components) and <code>palette.css</code> (icon palettes). The components also work without React:
+        put the same class names on standard elements.
+      </li>
+      <li>
+        <strong>iOS:</strong> <code>import Dotwear</code> also gives you the icons. <code>.dotwearTheme()</code> at the
+        root is optional — without it, the default theme is used.
+      </li>
+    </ul>
+
+    <h2>Next</h2>
+    <ul>
+      <li><a href="/icons/usage/">Using icons</a> — size, color, labels and palettes</li>
+      <li><a href="/components/button/">Components</a> — Button, TextField, Card and Toggle</li>
+      <li><a href="/theming/">Theming &amp; tokens</a></li>
+    </ul>
+  </article>
+</Base>

@@ -1,0 +1,74 @@
+{
+  "name": "@dotwear/icons",
+  "version": "0.1.0",
+  "description": "Pixel-perfect pixel-art icons for the web (SVG, React, palette CSS variables)",
+  "keywords": [
+    "icons",
+    "pixel",
+    "pixel-art",
+    "svg",
+    "react",
+    "design-system"
+  ],
+  "license": "MIT",
+  "homepage": "https://dotwear.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dotwear-dev/dotwear.git",
+    "directory": "packages/icons"
+  },
+  "bugs": {
+    "url": "https://github.com/dotwear-dev/dotwear/issues"
+  },
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./react": {
+      "types": "./dist/src/react/index.d.ts",
+      "default": "./dist/src/react/index.js"
+    },
+    "./palette.css": "./generated/palette.css",
+    "./svg/*": "./generated/svg/*"
+  },
+  "files": [
+    "dist",
+    "generated/palette.css",
+    "generated/svg",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "generate": "dotwear-generator generate icons",
+    "build": "dotwear-generator generate icons && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json",
+    "prepack": "cp ../../LICENSE LICENSE"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@dotwear/generator": "workspace:*",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

@@ -1,0 +1,58 @@
+---
+// トップページ（Introduction）。何ができるかと、どこから読めばよいかだけを書く
+import { byName, DotwearIcon, type DotwearIconName } from "@dotwear/web";
+import Base from "../layouts/Base.astro";
+import { loadIconMeta } from "../lib/source";
+
+const icons = await loadIconMeta();
+---
+
+<Base title="Dotwear">
+  <article class="prose">
+    <h1>Pixel-art UI for everyday apps.</h1>
+    <p class="lead">
+      Dotwear is a design system of pixel-art icons and UI styles for the web and iOS. Every icon is drawn once on a
+      grid and generated for each platform, so your web app and your iOS app look the same — down to the pixel.
+    </p>
+    <p class="hero-icons" aria-hidden="true">
+      {icons.map((i) => <DotwearIcon icon={byName[i.name as DotwearIconName]} scale={2} />)}
+    </p>
+
+    <h2>Why Dotwear</h2>
+    <ul>
+      <li>
+        <strong>Styles, not new controls.</strong> On iOS the look is a <code>ButtonStyle</code>, a
+        <code>ToggleStyle</code> and so on, applied to the standard controls — so VoiceOver, Dynamic Type and keyboard
+        access keep working.
+      </li>
+      <li>
+        <strong>Real small grids.</strong> Icons are drawn on a 16 × 16 grid and only ever scaled by whole numbers. No
+        blurry edges at 1×, 2× or 3×.
+      </li>
+      <li>
+        <strong>Palettes.</strong> Multi-color icons take their colors from a palette you can switch with one line.
+      </li>
+      <li>
+        <strong>One source of truth.</strong> Icons, tokens and component styles are generated from the same data for
+        every platform.
+      </li>
+    </ul>
+
+    <h2>Packages</h2>
+    <table>
+      <thead>
+        <tr><th>Platform</th><th>Icons only</th><th>Icons + UI</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Web</td><td><code>@dotwear/icons</code></td><td><code>@dotwear/web</code></td></tr>
+        <tr><td>iOS (SwiftUI)</td><td><code>DotwearIcons</code></td><td><code>Dotwear</code></td></tr>
+      </tbody>
+    </table>
+    <p>
+      Both UI packages ship the icons, the design tokens, the bundled pixel font and the four core components: Button,
+      TextField, Card and Toggle.
+    </p>
+
+    <p class="cta"><a class="pixel-button" href="/getting-started/">Get started</a><a href="/icons/">Browse the icons</a></p>
+  </article>
+</Base>

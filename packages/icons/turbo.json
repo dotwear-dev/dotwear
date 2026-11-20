@@ -1,0 +1,23 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/icons/**",
+        "$TURBO_ROOT$/tokens/**",
+        "$TURBO_ROOT$/schema/**",
+        "$TURBO_ROOT$/tools/generator/src/**"
+      ],
+      "outputs": ["dist/**", "generated/**"]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["$TURBO_DEFAULT$"]
+    },
+    "typecheck": {
+      "dependsOn": ["build"]
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "shape": {
+    "pixel-unit":   { "$type": "dimension", "$value": { "value": 2, "unit": "px" }, "$description": "1 ドットの論理サイズ。整数のみ" },
+    "border-width": { "$type": "number", "$value": 1, "$description": "ドット数" },
+    "border-gap":   { "$type": "number", "$value": 1, "$description": "二重線の枠の、外の線と内の線のすき間（ドット数）。0 にすると一重の枠" },
+    "border-inner-width": { "$type": "number", "$value": 1, "$description": "二重線の枠の、内の線の太さ（ドット数）。0 にすると一重の枠" },
+    "corner-step":  { "$type": "number", "$value": 1, "$description": "角の階段の段数" }
+  }
+}

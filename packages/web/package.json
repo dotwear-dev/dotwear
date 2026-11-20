@@ -1,0 +1,75 @@
+{
+  "name": "@dotwear/web",
+  "version": "0.1.0",
+  "description": "Dotwear UI for the web: design tokens and components (re-exports @dotwear/icons)",
+  "keywords": [
+    "design-system",
+    "pixel",
+    "pixel-art",
+    "design-tokens",
+    "ui"
+  ],
+  "license": "MIT",
+  "homepage": "https://dotwear.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dotwear-dev/dotwear.git",
+    "directory": "packages/web"
+  },
+  "bugs": {
+    "url": "https://github.com/dotwear-dev/dotwear/issues"
+  },
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./tokens.css": "./generated/tokens.css",
+    "./fonts.css": "./generated/fonts.css",
+    "./components.css": "./src/components.css"
+  },
+  "files": [
+    "dist",
+    "src/components.css",
+    "generated/tokens.css",
+    "generated/fonts.css",
+    "generated/fonts",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "generate": "dotwear-generator generate tokens",
+    "build": "dotwear-generator generate tokens && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json",
+    "prepack": "cp ../../LICENSE LICENSE"
+  },
+  "dependencies": {
+    "@dotwear/icons": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@dotwear/generator": "workspace:*",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

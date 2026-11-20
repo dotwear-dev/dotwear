@@ -1,0 +1,121 @@
+---
+// 全ページ共通のレイアウト。見た目は Dotwear 自身のトークン（--dw-*）で作る。
+// サイトは英語（README と同じ。利用者向けの公開物は英語にする）。左にドキュメントの目次を置く
+import "@dotwear/web/tokens.css";
+// 文字（DotGothic16）は利用者と同じく @dotwear/web の fonts.css から読む（ADR-026）
+import "@dotwear/web/fonts.css";
+import "@dotwear/icons/palette.css";
+import "../styles/global.css";
+// ロゴは generate brand の出力（ADR-015）。文字を含まない SVG なので、そのまま埋め込む
+import logo from "../../../../generated/brand/dotwear-24.svg?raw";
+import { tokens } from "@dotwear/web";
+import { COMPONENTS } from "../data/components";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** テスト用のページなど、検索エンジンに載せないページ */
+  noindex?: boolean;
+}
+
+const { title, description = "Pixel-art icons and UI for Web and iOS apps, generated from one source of truth.", noindex = false } = Astro.props;
+const fullTitle = title === "Dotwear" ? title : `${title} | Dotwear`;
+// <!-- Generated ... --> のコメントを取り除いてから埋め込む
+const logoSvg = logo.replace(/<!--.*?-->\s*/s, "");
+// 正規の URL（末尾の / の有無などの違いを 1 つにまとめる）と、リンクを貼ったときに出る画像（OGP）。
+// SNS は相対 URL を読めないので、どちらも site（https://dotwear.dev）からの絶対 URL にする
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL("/og.png", Astro.site);
+
+// 目次。Android はまだ載せない（ライブラリを Maven Central に出していないため。ADR-022）
+const NAV: { heading: string; links: { href: string; label: string }[] }[] = [
+  {
+    heading: "Get started",
+    links: [
+      { href: "/", label: "Introduction" },
+      { href: "/getting-started/", label: "Installation" },
+    ],
+  },
+  {
+    heading: "Icons",
+    links: [
+      { href: "/icons/", label: "Icon set" },
+      { href: "/icons/usage/", label: "Using icons" },
+    ],
+  },
+  { heading: "Components", links: COMPONENTS.map((c) => ({ href: `/components/${c.id}/`, label: c.title })) },
+  {
+    heading: "Foundations",
+    links: [
+      { href: "/theming/", label: "Theming & tokens" },
+      { href: "/accessibility/", label: "Accessibility" },
+    ],
+  },
+];
+const current = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    {/* アイコンはロゴの元データからジェネレーターで作ったもの（generated/brand/site/）。SVG を読めないブラウザは PNG を使う */}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {/* スマホのブラウザのバーの色。ページの背景（color.bg）に合わせる */}
+    <meta name="theme-color" content={tokens.color.bg} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Dotwear" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Dotwear — Pixel-art icons and UI for business apps" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Dotwear home">
+        <span class="brand-logo" set:html={logoSvg} />
+        <span class="brand-name">dotwear</span>
+      </a>
+      <nav aria-label="Site">
+        <a href="/getting-started/">Docs</a>
+        <a href="/icons/">Icons</a>
+        <a href="https://github.com/dotwear-dev/dotwear">GitHub</a>
+      </nav>
+    </header>
+    <div class="site-body">
+      <nav class="site-sidebar" aria-label="Documentation">
+        {
+          NAV.map((section) => (
+            <section>
+              <h2>{section.heading}</h2>
+              <ul>
+                {section.links.map((link) => (
+                  <li>
+                    <a href={link.href} aria-current={current === link.href ? "page" : undefined}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        }
+      </nav>
+      <main id="content">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+---
+// コンポーネントのページ（1 コンポーネント 1 ページ）。中身は src/data/components.ts、
+// コード例は src/snippets/components.tsx（Web）と Snippets.swift（iOS）から取り出す。
+// 見本は @dotwear/web の React の部品をそのまま置く（見た目は components.css）
+import "@dotwear/web/components.css";
+import CodeTabs from "../../components/CodeTabs.astro";
+import { ComponentDemo } from "../../components/ComponentDemo";
+import { COMPONENTS, type ComponentDoc } from "../../data/components";
+import Base from "../../layouts/Base.astro";
+import { swift, web } from "../../lib/snippets";
+
+export function getStaticPaths() {
+  return COMPONENTS.map((doc) => ({ params: { id: doc.id }, props: { doc } }));
+}
+
+const { doc } = Astro.props as { doc: ComponentDoc };
+---
+
+<Base title={doc.title} description={doc.summary}>
+  <article class="prose">
+    <h1>{doc.title}</h1>
+    <p class="lead">{doc.summary}</p>
+
+    <div class="component-demo" aria-label={`${doc.title} examples`} role="group">
+      <ComponentDemo id={doc.id} />
+    </div>
+
+    {
+      doc.snippets.map((s) => (
+        <>
+          <h2>{s.title}</h2>
+          <CodeTabs
+            label={s.title}
+            items={[
+              { platform: "web", code: web(s.name) },
+              { platform: "swift", code: swift(s.name) },
+            ]}
+          />
+        </>
+      ))
+    }
+
+    <h2>Variants</h2>
+    <table>
+      <thead><tr><th>Variant</th><th>Use for</th></tr></thead>
+      <tbody>{doc.variants.map((v) => <tr><td><code>{v.name}</code></td><td>{v.use}</td></tr>)}</tbody>
+    </table>
+
+    <h2>States</h2>
+    <table>
+      <thead><tr><th>State</th><th>Appearance</th></tr></thead>
+      <tbody>{doc.states.map((s) => <tr><td>{s.name}</td><td>{s.look}</td></tr>)}</tbody>
+    </table>
+
+    <h2>React API</h2>
+    <table>
+      <thead><tr><th>Prop</th><th>Description</th></tr></thead>
+      <tbody>{doc.webApi.map((a) => <tr><td><code>{a.api}</code></td><td>{a.description}</td></tr>)}</tbody>
+    </table>
+
+    <h2>SwiftUI API</h2>
+    <table>
+      <thead><tr><th>API</th><th>Description</th></tr></thead>
+      <tbody>{doc.swiftApi.map((a) => <tr><td><code>{a.api}</code></td><td>{a.description}</td></tr>)}</tbody>
+    </table>
+
+    <h2>Accessibility</h2>
+    <ul>{doc.accessibility.map((a) => <li>{a}</li>)}</ul>
+  </article>
+</Base>

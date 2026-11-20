@@ -1,0 +1,13 @@
+{
+  "name": "@dotwear/demo-ios",
+  "private": true,
+  "description": "iOS のデモアプリ。Swift の生成物と .xcodeproj を作ってから Xcode で開く",
+  "scripts": {
+    "project": "xcodegen generate --quiet",
+    "dev": "pnpm run project && open DotwearDemo.xcodeproj",
+    "test:ios": "pnpm run project && ./scripts/test-ui.sh"
+  },
+  "devDependencies": {
+    "@dotwear/swift": "workspace:*"
+  }
+}

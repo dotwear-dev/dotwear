@@ -1,0 +1,49 @@
+# デモアプリの Xcode プロジェクトの定義（XcodeGen）。.xcodeproj はここから作る生成物なので git に入れない（ADR-017）。
+#   pnpm dev:ios   生成物（Swift のアイコン・トークン）と .xcodeproj を作り、Xcode で開く
+name: DotwearDemo
+options:
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+packages:
+  Dotwear:
+    # モノレポの Swift Package をそのまま使う（配布用リポジトリではなく、開発中のコード）
+    path: ../../packages/swift
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    # バンドル ID はデモ専用の仮の値。正式な ID は未定
+    PRODUCT_BUNDLE_IDENTIFIER: com.example.dotwear-demo
+    GENERATE_INFOPLIST_FILE: YES
+    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "0.1.0"
+targets:
+  DotwearDemo:
+    type: application
+    platform: iOS
+    sources: [Sources]
+    dependencies:
+      - package: Dotwear
+        product: Dotwear
+    settings:
+      base:
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Dotwear Demo
+        TARGETED_DEVICE_FAMILY: "1,2"
+  DotwearDemoUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: DotwearDemo
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.dotwear-demo.uitests
+        TEST_TARGET_NAME: DotwearDemo
+schemes:
+  DotwearDemo:
+    build:
+      targets:
+        DotwearDemo: all
+    test:
+      targets: [DotwearDemoUITests]

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/icons/**",
+        "$TURBO_ROOT$/brand/**",
+        "$TURBO_ROOT$/tokens/**",
+        "$TURBO_ROOT$/packages/swift/Tests/DocSnippetsTests/**"
+      ],
+      "outputs": ["dist/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["playwright-report/**", "test-results/**"]
+    }
+  }
+}

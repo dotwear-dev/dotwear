@@ -1,0 +1,8 @@
+packages:
+  - "tools/*"
+  - "packages/*"
+  - "apps/*"
+
+# インストール時のビルドスクリプトを許可する依存（tsx / vitest が使う esbuild）
+allowBuilds:
+  esbuild: true

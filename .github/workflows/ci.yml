@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # 重いジョブ（swift・android・android-device）を、開発用リポジトリで必要なときだけ動かす
+  workflow_dispatch:
+
+# 重いジョブを動かす条件（ジョブごとの if に同じものを書く）：
+#   公開リポジトリ（Actions が無料）では毎回動かす。非公開のリポジトリでは、手動で実行したときだけ動かす。
+#   macOS のランナーは 1 分が 10 分として数えられ、非公開のリポジトリの無料の枠をすぐに使い切るため。
+#   開発用リポジトリの変更は main に入ると公開用リポジトリに書き出され、そこで毎回これらが動く。
+#   公開の前には release.yml が全部のテストを通すので、壊れたまま公開されることはない
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm validate
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  # ブラウザでの表示がにじまないことの検査（apps/docs-site/e2e）。
+  # ブラウザのダウンロードに時間がかかるので、validate / test とは別のジョブにする
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @dotwear/docs-site exec playwright install --with-deps chromium webkit
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            apps/docs-site/playwright-report/
+            apps/docs-site/test-results/
+
+  # Swift Package（packages/swift）のテスト。SwiftUI は macOS でしか動かないので macOS のランナーで行う。
+  # macOS の swift test、iOS シミュレーター（@2x・@3x の実機相当）でのテスト、
+  # デモアプリのアクセシビリティ監査（apps/demo-ios の UI テスト）を走らせる
+  swift:
+    if: github.event_name == 'workflow_dispatch' || !github.event.repository.private
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # デモアプリの .xcodeproj は XcodeGen で作る（ADR-017）
+      - run: brew install xcodegen
+      # 手元との描画の違いを調べられるように、Xcode とシミュレーターの版をログに残す
+      - run: xcodebuild -version && xcrun simctl list runtimes
+      - run: pnpm test:swift
+        env:
+          # 一致しなかったときに撮れた画像の置き場所（swift-snapshot-testing の SNAPSHOT_ARTIFACTS）。
+          # シミュレーターの中のテストに渡すため、xcodebuild の決まりで TEST_RUNNER_ を付ける
+          TEST_RUNNER_SNAPSHOT_ARTIFACTS: ${{ github.workspace }}/snapshot-artifacts
+          SNAPSHOT_ARTIFACTS: ${{ github.workspace }}/snapshot-artifacts
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: swift-snapshots
+          # 基準画像と、一致しなかったときの実際の画像の両方を残す
+          path: |
+            packages/swift/Tests/**/__Snapshots__/
+            snapshot-artifacts/
+
+  # Android（packages/android と apps/demo-android）の JVM のテスト。
+  # Robolectric で pixel-roundtrip・形のピクセル検査・スナップショット（Roborazzi）・自前のアクセシビリティ検査を行う
+  android:
+    if: github.event_name == 'workflow_dispatch' || !github.event.repository.private
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v5
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:android
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: android-test-results
+          path: |
+            packages/android/*/build/reports/
+            packages/android/*/build/outputs/roborazzi/
+            apps/demo-android/build/reports/
+
+  # エミュレーターで本物の ATF（Accessibility Test Framework）を動かす。Robolectric では ATF が動かないため
+  android-device:
+    if: github.event_name == 'workflow_dispatch' || !github.event.repository.private
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v5
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @dotwear/android run build
+      # エミュレーターを速く動かすために KVM を使えるようにする
+      - run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          script: cd packages/android && ./gradlew :demo:connectedDebugAndroidTest

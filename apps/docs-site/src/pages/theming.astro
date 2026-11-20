@@ -1,0 +1,120 @@
+---
+// テーマとトークン。表はトークンの生成物（@dotwear/web の tokens）から作るので、トークンを変えれば表も変わる
+import { tokens } from "@dotwear/web";
+import CodeTabs from "../components/CodeTabs.astro";
+import Base from "../layouts/Base.astro";
+import { swift, web } from "../lib/snippets";
+
+// camelCase のキー → CSS 変数名（onPrimary → --dw-color-on-primary）
+const cssVar = (group: string, key: string) => `--dw-${group}-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+// Swift の DotwearTheme.Colors のプロパティ名（bg と fg だけ名前が違う）
+const SWIFT_COLOR: Record<string, string> = { bg: "background", fg: "foreground" };
+
+// ロゴ用の brand は利用者向けのトークンではないので載せない
+const colors = Object.entries(tokens.color).filter(([k]) => k !== "brand");
+const shape = Object.entries(tokens.shape);
+---
+
+<Base title="Theming & tokens" description="Dotwear's design tokens as CSS variables and SwiftUI theme values, and how to override them.">
+  <article class="prose">
+    <h1>Theming &amp; tokens</h1>
+    <p>
+      Colors and sizes come from one set of design tokens. On the web they are CSS variables in
+      <code>@dotwear/web/tokens.css</code>; in SwiftUI they are a <code>DotwearTheme</code> value in the environment.
+    </p>
+
+    <h2>Lengths are counted in dots</h2>
+    <p>
+      Every length is a number of dots multiplied by the pixel unit (<code>{tokens.shape.pixelUnit}</code>, i.e. 2 pt in
+      SwiftUI). A button that is 16 dots tall is 32 px. Because everything is a whole multiple of one unit, borders,
+      steps and shadows always land on whole pixels.
+    </p>
+
+    <h2>Colors</h2>
+    <table>
+      <thead><tr><th></th><th>CSS variable</th><th>SwiftUI</th><th>Value</th></tr></thead>
+      <tbody>
+        {
+          colors.map(([key, value]) => (
+            <tr>
+              <td><span class="swatch-chip" style={`background:${value}`} /></td>
+              <td><code>{cssVar("color", key)}</code></td>
+              <td><code>theme.colors.{SWIFT_COLOR[key] ?? key}</code></td>
+              <td><code>{value}</code></td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+
+    <h2>Shape</h2>
+    <table>
+      <thead><tr><th>CSS variable</th><th>SwiftUI</th><th>Value</th></tr></thead>
+      <tbody>
+        {
+          shape.map(([key, value]) => (
+            <tr>
+              <td><code>{cssVar("shape", key)}</code></td>
+              <td><code>theme.{key}</code></td>
+              <td><code>{value}</code>{key === "pixelUnit" ? "" : value === 1 ? " dot" : " dots"}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+
+    <h2>Using tokens</h2>
+    <CodeTabs
+      label="Using tokens"
+      items={[
+        { platform: "web", code: web("tokens-ts"), note: "In CSS, use the variables directly: var(--dw-color-primary). From TypeScript:" },
+        { platform: "swift", code: swift("theme-read") },
+      ]}
+    />
+
+    <h2>Applying and customizing a theme</h2>
+    <CodeTabs
+      label="Customizing"
+      items={[
+        {
+          platform: "web",
+          lang: "css",
+          note: "Override the variables after importing tokens.css — globally or for one part of the page.",
+          code: `:root {\n  --dw-color-primary: #cc334d;\n}\n\n.admin-area {\n  --dw-color-primary: #3a9d5d;\n}`,
+        },
+        {
+          platform: "swift",
+          note: "Set the theme at the root of your app. Any view can override it for its subtree with .dotwearTheme(...).",
+          code: `${swift("theme-root")}\n\n${swift("theme-custom")}`,
+        },
+      ]}
+    />
+    <p>
+      Keep the pixel unit a whole number. Changing it scales the whole UI by a whole factor; fractional values would blur
+      edges.
+    </p>
+    <p>Icon palettes are themed separately — see <a href="/icons/usage/#palettes">Palettes</a>.</p>
+
+    <h2 id="look">The Dotwear look</h2>
+    <p>
+      Dotwear recalls a four-shade handheld game screen: black, white and two grays, double-line frames, and the
+      DotGothic16 pixel font (SIL Open Font License). The font is drawn on a 16 px grid, so keep text at 16, 32 or 48 px
+      to stay sharp. Because there are only four shades, errors are shown with words and icons, never by color alone.
+    </p>
+    <p>
+      For a single-line frame, set <code>--dw-shape-border-gap</code> and <code>--dw-shape-border-inner-width</code> to
+      <code>0</code>.
+    </p>
+    {/* 見本。部品の CSS はこのサイトのもの（Web の React コンポーネントはまだない。ADR-025） */}
+    <div class="theme-preview">
+      <div class="pixel-box theme-preview-window">
+        <p>Your order has been saved.</p>
+        <p class="demo-row">
+          <button type="button" class="pixel-button">OK</button>
+          <button type="button" class="pixel-button">Cancel</button>
+        </p>
+        <p class="gallery-search"><label>Name<input type="text" value="Dotwear" /></label></p>
+      </div>
+    </div>
+  </article>
+</Base>

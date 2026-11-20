@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.turbo/
+coverage/
+*.log
+.DS_Store
+
+# 生成物は git に入れない（pnpm generate / build で作る。ADR-014）
+packages/*/generated/
+# Swift の生成物。配布専用リポジトリへ同期するときにだけ含める（ADR-017）
+packages/swift/Sources/*/Generated/
+packages/swift/Tests/*/Generated/
+# ブランド素材の出力（pnpm generate brand）
+/generated/
+
+# Swift Package のビルド結果
+.build/
+.swiftpm/
+
+# npm に公開するときにリポジトリ直下からコピーするライセンス文（prepack）
+packages/icons/LICENSE
+packages/web/LICENSE

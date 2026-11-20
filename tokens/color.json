@@ -1,0 +1,13 @@
+{
+  "color": {
+    "bg":         { "$type": "color", "$value": "#f8f8f8" },
+    "fg":         { "$type": "color", "$value": "#181818" },
+    "border":     { "$type": "color", "$value": "#181818" },
+    "primary":    { "$type": "color", "$value": "#181818" },
+    "on-primary": { "$type": "color", "$value": "#f8f8f8" },
+    "danger":     { "$type": "color", "$value": "#181818", "$description": "4 階調なので黒。エラーは色ではなく文言とアイコンで伝える（ADR-027）" },
+    "focus":      { "$type": "color", "$value": "#585858", "$description": "背景との対比 3:1 以上（WCAG 1.4.11）を保つため、いちばん薄いグレーは使わない" },
+    "disabled":   { "$type": "color", "$value": "#a8a8a8" },
+    "brand":      { "$type": "color", "$value": "#ff933e", "$description": "ロゴのアクセント（ADR-011）" }
+  }
+}

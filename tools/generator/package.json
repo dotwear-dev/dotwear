@@ -1,0 +1,32 @@
+{
+  "name": "@dotwear/generator",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "tsx src/cli.ts validate",
+    "generate": "tsx src/cli.ts generate",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "ajv": "^8.20.0",
+    "jsonc-parser": "^3.3.1",
+    "style-dictionary": "^5.8.0",
+    "tsx": "^4.23.15"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "bin": {
+    "dotwear-generator": "./bin/dotwear-generator.js"
+  },
+  "exports": {
+    "./naming": "./src/emit/naming.ts",
+    "./paths": "./src/paths/rects.ts",
+    "./validate": "./src/validate/index.ts"
+  }
+}

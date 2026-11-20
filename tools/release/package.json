@@ -1,0 +1,22 @@
+{
+  "name": "@dotwear/release",
+  "private": true,
+  "type": "module",
+  "description": "公開の準備のスクリプト（版番号の書き写し、公開用リポジトリと Swift の配布用リポジトリへの書き出し）",
+  "scripts": {
+    "set-version": "tsx src/set-version.ts",
+    "export-public": "tsx src/export-public.ts",
+    "export-swift": "tsx src/export-swift.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json",
+    "export-swift-kit": "tsx src/export-swift-kit.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.23.15"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

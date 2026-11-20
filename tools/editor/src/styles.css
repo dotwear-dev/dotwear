@@ -1,0 +1,191 @@
+/* エディタの見た目。値は Dotwear のトークン（--dw-*）から取る */
+:root {
+  --dot: var(--dw-shape-pixel-unit);
+  --border: calc(var(--dw-shape-border-width) * var(--dot));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--dw-color-bg);
+  color: var(--dw-color-fg);
+  font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  font-size: 14px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  padding: var(--dot) calc(3 * var(--dot));
+  border: var(--border) solid var(--dw-color-border);
+  background: #fff;
+  color: var(--dw-color-fg);
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  color: var(--dw-color-disabled);
+  border-color: var(--dw-color-disabled);
+  cursor: default;
+}
+
+button[aria-pressed="true"],
+button[aria-selected="true"],
+button[aria-current="true"],
+button.primary:not(:disabled) {
+  background: var(--dw-color-primary);
+  color: var(--dw-color-on-primary);
+}
+
+:focus-visible {
+  outline: var(--border) solid var(--dw-color-focus);
+  outline-offset: var(--dot);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  border-right: var(--border) solid var(--dw-color-border);
+  padding: calc(4 * var(--dot));
+}
+
+.icon-list {
+  list-style: none;
+  padding: 0;
+  margin: calc(4 * var(--dot)) 0 0;
+  display: grid;
+  gap: var(--dot);
+}
+
+.icon-list button {
+  width: 100%;
+  text-align: left;
+  border-color: transparent;
+  background: transparent;
+}
+
+.icon-list button[aria-current="true"] {
+  background: var(--dw-color-primary);
+}
+
+.empty {
+  padding: calc(12 * var(--dot));
+}
+
+.workspace {
+  padding: calc(6 * var(--dot));
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: calc(3 * var(--dot));
+  margin-bottom: calc(6 * var(--dot));
+}
+
+.toolbar h1 {
+  font-size: 1.25rem;
+  margin: 0 calc(4 * var(--dot)) 0 0;
+}
+
+.dirty {
+  color: var(--dw-color-danger);
+}
+
+.columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(12 * var(--dot));
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(2 * var(--dot));
+  margin-bottom: calc(3 * var(--dot));
+}
+
+.swatches button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dot);
+}
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--dw-color-border);
+}
+
+/* 透明のマスは市松模様で見せる（白い色と区別するため） */
+.canvas .cell:not([style]),
+.swatch[data-ch="."] {
+  background-color: #fff;
+  background-image: conic-gradient(#e4e0d4 25%, transparent 0 50%, #e4e0d4 0 75%, transparent 0);
+  background-size: 50% 50%;
+}
+
+.canvas {
+  display: grid;
+  border: var(--border) solid var(--dw-color-border);
+  box-sizing: content-box;
+  touch-action: none;
+  user-select: none;
+  cursor: crosshair;
+}
+
+.canvas .cell {
+  outline: 1px solid rgb(0 0 0 / 0.06);
+}
+
+.side {
+  min-width: 280px;
+}
+
+.side h2 {
+  font-size: 1rem;
+  margin: calc(6 * var(--dot)) 0 calc(3 * var(--dot));
+}
+
+.side label {
+  display: grid;
+  gap: var(--dot);
+  margin-bottom: calc(3 * var(--dot));
+}
+
+.previews {
+  display: flex;
+  align-items: flex-end;
+  gap: calc(6 * var(--dot));
+  padding: calc(4 * var(--dot));
+  background: #fff;
+  border: var(--border) solid var(--dw-color-border);
+}
+
+.previews figure {
+  margin: 0;
+  text-align: center;
+}
+
+.hint {
+  margin-top: 0;
+  color: var(--dw-color-disabled);
+}
+
+.issues {
+  border: var(--border) solid var(--dw-color-danger);
+  padding: calc(3 * var(--dot));
+  background: #fff;
+}

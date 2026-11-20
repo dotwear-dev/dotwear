@@ -1,0 +1,456 @@
+/*
+ * サイト全体の見た目。値はすべて Dotwear のトークン（--dw-*）から取る。
+ * 長さはドット数 × pixel-unit で決める（docs/02_architecture.md「4. デザイントークン」）。
+ * 文字はトークンのピクセルフォント（DotGothic16。ADR-026）。
+ */
+
+:root {
+  --dot: var(--dw-shape-pixel-unit);
+  --border: calc(var(--dw-shape-border-width) * var(--dot));
+  /* 箱の地の色。背景と同じ色にして、二重線の枠だけで区切る */
+  --surface: var(--dw-color-bg);
+  /*
+   * コード例の色（Shiki の css-variables テーマ。components/CodeTabs.astro）。
+   * 4 階調のうち、文字に使えるのは背景との対比が足りる 2 色だけ（#a8a8a8 は 4.5:1 に届かない）。
+   * キーワードなどは濃い色、コメント・文字列・句読点は 1 段薄い色（パレットのスロット 3 = #585858）にして、色相を使わずに見分ける
+   */
+  --astro-code-foreground: var(--dw-color-fg);
+  --astro-code-background: var(--surface);
+  --astro-code-token-keyword: var(--dw-color-fg);
+  --astro-code-token-function: var(--dw-color-fg);
+  --astro-code-token-constant: var(--dw-color-fg);
+  --astro-code-token-parameter: var(--dw-color-fg);
+  --astro-code-token-link: var(--dw-color-fg);
+  --astro-code-token-string: var(--dw-palette-3);
+  --astro-code-token-string-expression: var(--dw-palette-3);
+  --astro-code-token-comment: var(--dw-palette-3);
+  --astro-code-token-punctuation: var(--dw-palette-3);
+  /* 二重線の枠（shape.border-gap・border-inner-width。ADR-027）。外の線は border、すき間と内の線は内側の影で描く。
+     トークンを 0 にすれば影の幅も 0 になり、一重の枠に戻る */
+  --frame-inset: calc((var(--dw-shape-border-gap) + var(--dw-shape-border-inner-width)) * var(--dot));
+  --frame-inner:
+    inset 0 0 0 calc(var(--dw-shape-border-gap) * var(--dot)) var(--surface),
+    inset 0 0 0 var(--frame-inset) var(--dw-color-border);
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--dw-color-bg);
+  color: var(--dw-color-fg);
+  /* DotGothic16 は 16px を 1 マスとして描かれているので、文字の大きさは 16px の整数倍だけにし、
+     太字の合成（にじむ）と文字のなめらか処理を切る */
+  font-family: var(--dw-typography-family);
+  font-size: var(--dw-typography-body);
+  font-synthesis: none;
+  -webkit-font-smoothing: none;
+  line-height: 1.7;
+}
+
+:is(h1, h2, h3, h4, strong, b, th, dt) {
+  font-weight: normal;
+}
+
+h1 {
+  font-size: 32px;
+}
+
+:is(h2, h3, h4) {
+  font-size: 16px;
+}
+
+/* 太字が使えないので、強調は白黒を反転させる */
+:is(strong, b) {
+  background: var(--dw-color-fg);
+  color: var(--dw-color-bg);
+  padding: 0 var(--dot);
+}
+
+/* 太字が使えないので、見出しは下線で区切る */
+h2 {
+  border-bottom: var(--border) solid var(--dw-color-border);
+}
+
+a {
+  color: var(--dw-color-primary);
+}
+
+:focus-visible {
+  outline: var(--border) solid var(--dw-color-focus);
+  outline-offset: var(--dot);
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8 * var(--dot));
+  padding: calc(6 * var(--dot)) calc(8 * var(--dot));
+  border-bottom: var(--border) solid var(--dw-color-border);
+}
+
+.site-header nav {
+  display: flex;
+  gap: calc(8 * var(--dot));
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(4 * var(--dot));
+  color: var(--dw-color-fg);
+  text-decoration: none;
+}
+
+/* ロゴは 24 のグリッドを 2 倍（48px）で表示する。整数倍以外にはしない */
+.brand-logo svg {
+  display: block;
+  width: 48px;
+  height: 48px;
+}
+
+/* 本文の前に目次を置くので、キーボードの利用者が目次を飛ばせるようにする */
+.skip-link {
+  position: absolute;
+  left: calc(4 * var(--dot));
+  top: -100px;
+  padding: var(--dot) calc(4 * var(--dot));
+  background: var(--dw-color-bg);
+  border: var(--border) solid var(--dw-color-border);
+}
+
+.skip-link:focus {
+  top: calc(4 * var(--dot));
+}
+
+/* 左に目次、右に本文。狭い画面では目次を本文の上に置く */
+.site-body {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.site-sidebar {
+  padding: calc(12 * var(--dot)) calc(6 * var(--dot));
+  border-right: var(--border) solid var(--dw-color-border);
+}
+
+.site-sidebar h2 {
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: calc(6 * var(--dot)) 0 calc(2 * var(--dot));
+}
+
+.site-sidebar section:first-child h2 {
+  margin-top: 0;
+}
+
+.site-sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-sidebar a {
+  display: block;
+  padding: calc(var(--dot) / 2) calc(2 * var(--dot));
+  color: var(--dw-color-fg);
+  text-decoration: none;
+}
+
+/* 選んでいる目次は、色の反転ではなく ▶ のカーソルで示す（読み上げは aria-current で伝わる） */
+.site-sidebar a[aria-current="page"]::before {
+  content: "▶";
+  margin-right: var(--dot);
+}
+
+main {
+  min-width: 0;
+  padding: calc(12 * var(--dot)) calc(8 * var(--dot));
+}
+
+@media (max-width: 720px) {
+  .site-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .site-sidebar {
+    border-right: 0;
+    border-bottom: var(--border) solid var(--dw-color-border);
+    padding: calc(6 * var(--dot)) calc(8 * var(--dot));
+  }
+
+  .site-sidebar ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 calc(2 * var(--dot));
+  }
+
+  main {
+    padding: calc(8 * var(--dot));
+  }
+}
+
+/* ピクセル調の枠：角を 1 段の階段にし、右下に 1 ドットの影を付ける */
+.pixel-box {
+  background: var(--surface);
+  border: var(--border) solid var(--dw-color-border);
+  box-shadow: var(--frame-inner), var(--dot) var(--dot) 0 var(--dw-color-border);
+}
+
+.pixel-button {
+  font: inherit;
+  /* 内側の線の分だけ余白を広げ、文字が線に触れないようにする */
+  padding: calc(var(--dot) + var(--frame-inset)) calc(5 * var(--dot) + var(--frame-inset));
+  background: var(--surface);
+  color: var(--dw-color-fg);
+  border: var(--border) solid var(--dw-color-border);
+  box-shadow: var(--frame-inner), var(--dot) var(--dot) 0 var(--dw-color-border);
+  cursor: pointer;
+}
+
+.pixel-button:active {
+  transform: translate(var(--dot), var(--dot));
+  box-shadow: var(--frame-inner);
+}
+
+.pixel-button[aria-pressed="true"] {
+  background: var(--dw-color-primary);
+  color: var(--dw-color-on-primary);
+}
+
+/* 本文 */
+.prose {
+  max-width: 760px;
+}
+
+.prose code {
+  font-family: var(--dw-typography-family);
+}
+
+/* アイコンを並べる行。行の高さで小数の位置にずれないよう、flex で揃える */
+.hero-icons,
+.not-found-icon,
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: calc(6 * var(--dot));
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  gap: calc(6 * var(--dot));
+}
+
+.cta .pixel-button {
+  text-decoration: none;
+}
+
+.swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dot);
+  margin-right: calc(3 * var(--dot));
+}
+
+.swatch-chip {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: var(--border) solid var(--dw-color-border);
+  vertical-align: middle;
+}
+
+/* プラットフォームごとのコード例のタブ（components/CodeTabs.astro） */
+/* display を指定した要素でも hidden 属性で隠れるようにする（JavaScript がないときはタブの列を隠すため） */
+.code-tabs [hidden] {
+  display: none;
+}
+
+.code-tabs {
+  margin: calc(4 * var(--dot)) 0;
+}
+
+.code-tabs-list {
+  display: flex;
+  gap: calc(2 * var(--dot));
+}
+
+.code-tabs-list [role="tab"] {
+  font: inherit;
+  padding: var(--dot) calc(5 * var(--dot));
+  background: var(--surface);
+  color: var(--dw-color-fg);
+  border: var(--border) solid var(--dw-color-border);
+  border-bottom: 0;
+  cursor: pointer;
+}
+
+.code-tabs-list [role="tab"][aria-selected="true"] {
+  background: var(--dw-color-primary);
+  color: var(--dw-color-on-primary);
+}
+
+.code-tabs-panel {
+  border: var(--border) solid var(--dw-color-border);
+  background: var(--surface);
+  box-shadow: var(--frame-inner);
+  padding: calc(3 * var(--dot) + var(--frame-inset)) calc(4 * var(--dot) + var(--frame-inset));
+}
+
+/* JavaScript が動かないときだけ、パネルの見出しを出して全部を並べる */
+.code-tabs.is-enhanced .code-tabs-fallback-title {
+  display: none;
+}
+
+.code-tabs-fallback-title {
+  margin: 0 0 var(--dot);
+}
+
+.code-tabs:not(.is-enhanced) .code-tabs-panel + .code-tabs-panel {
+  margin-top: calc(3 * var(--dot));
+}
+
+.code-tabs-note {
+  margin: 0 0 calc(2 * var(--dot));
+}
+
+.prose .code-tabs-panel pre {
+  margin: 0;
+  padding: calc(2 * var(--dot)) 0;
+  overflow-x: auto;
+  border: 0;
+}
+
+/* 表 */
+.prose table {
+  border-collapse: collapse;
+  margin: calc(4 * var(--dot)) 0;
+}
+
+.prose th,
+.prose td {
+  border: var(--border) solid var(--dw-color-border);
+  padding: var(--dot) calc(4 * var(--dot));
+  text-align: left;
+}
+
+.prose pre {
+  padding: calc(4 * var(--dot));
+  overflow-x: auto;
+  border: var(--border) solid var(--dw-color-border);
+}
+
+/* アイコン一覧 */
+.gallery-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(6 * var(--dot));
+}
+
+.gallery-search input {
+  font: inherit;
+  margin-left: calc(2 * var(--dot));
+  padding: calc(var(--dot) + var(--frame-inset)) calc(3 * var(--dot) + var(--frame-inset));
+  color: var(--dw-color-fg);
+  background: var(--surface);
+  border: var(--border) solid var(--dw-color-border);
+  box-shadow: var(--frame-inner);
+}
+
+.gallery-scale {
+  display: flex;
+  gap: calc(2 * var(--dot));
+}
+
+.gallery-grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  /* 列幅を固定の偶数 px にする。1fr だとセルの幅が小数になり、中央に置いたアイコンが小数の位置にずれてにじむため */
+  grid-template-columns: repeat(auto-fill, 112px);
+  gap: calc(4 * var(--dot));
+}
+
+.gallery-item {
+  width: 100%;
+  min-height: 112px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(3 * var(--dot));
+  font: inherit;
+  color: var(--dw-color-fg);
+  cursor: pointer;
+}
+
+.gallery-item[aria-pressed="true"] {
+  outline: var(--border) solid var(--dw-color-primary);
+}
+
+.gallery-detail {
+  margin-top: calc(8 * var(--dot));
+  padding: calc(6 * var(--dot) + var(--frame-inset));
+}
+
+.gallery-detail h2 {
+  display: flex;
+  align-items: center;
+  gap: calc(4 * var(--dot));
+  margin-top: 0;
+}
+
+.gallery-detail dt {
+  text-decoration: underline;
+}
+
+.gallery-detail dd {
+  margin: 0 0 calc(3 * var(--dot));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(3 * var(--dot));
+}
+
+/* Theming のページの見本 */
+.theme-preview-window {
+  max-width: 400px;
+  padding: calc(6 * var(--dot) + var(--frame-inset));
+}
+
+.theme-preview-window p {
+  margin: 0 0 calc(4 * var(--dot));
+}
+
+.theme-preview-window p:last-child {
+  margin-bottom: 0;
+}
+
+/* 部品のページの見本（components/ComponentDemo.tsx） */
+.component-demo {
+  margin: calc(4 * var(--dot)) 0;
+}
+
+.demo-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(6 * var(--dot));
+}
+
+.demo-narrow {
+  align-items: stretch;
+  max-width: 320px;
+}

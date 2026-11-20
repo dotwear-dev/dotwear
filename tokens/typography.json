@@ -1,0 +1,7 @@
+{
+  "typography": {
+    "family": { "$type": "fontFamily", "$value": ["DotGothic16", "monospace"], "$description": "16px を 1 マスとして描かれたフォント。16px の整数倍で使う（ADR-026）" },
+    "label":  { "$type": "dimension", "$value": { "value": 16, "unit": "px" } },
+    "body":   { "$type": "dimension", "$value": { "value": 16, "unit": "px" } }
+  }
+}

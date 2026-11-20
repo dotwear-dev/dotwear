@@ -1,0 +1,54 @@
+---
+// Playwright の検査用ページ（e2e/pixel.spec.ts）。検索エンジンには載せない。
+// 全アイコンを全グリッドで、32px（16 のグリッドなら scale 2）相当の整数倍で並べる。
+// 文字を置かず、背景は白・メインの色は黒にして、ピクセルの色を検査しやすくする
+import { byName, DotwearIcon, type DotwearIconName } from "@dotwear/web";
+import "@dotwear/icons/palette.css";
+import { loadIconMeta } from "../../lib/source";
+
+const SCALE = 2;
+const icons = await loadIconMeta();
+const items = icons.flatMap((icon) => icon.grids.map((grid) => ({ icon, grid })));
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>pixel test</title>
+    <style>
+      body {
+        margin: 0;
+        background: #ffffff;
+        color: #000000;
+      }
+      /* 位置を整数の px に固定する（小数の位置に置くと、正しい SVG でもにじむため） */
+      #pixel-test {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 16px;
+        width: 640px;
+      }
+      #pixel-test svg {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="pixel-test" data-scale={SCALE}>
+      {
+        items.map(({ icon, grid }) => (
+          <DotwearIcon
+            icon={byName[icon.name as DotwearIconName]}
+            grid={grid as 12 | 16 | 24}
+            scale={SCALE}
+            data-name={icon.name}
+            data-grid={grid}
+          />
+        ))
+      }
+    </div>
+  </body>
+</html>

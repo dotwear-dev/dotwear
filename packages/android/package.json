@@ -1,0 +1,13 @@
+{
+  "name": "@dotwear/android",
+  "private": true,
+  "description": "Android（Gradle）の生成物を作るための workspace。ビルドとテストは Gradle で行う",
+  "scripts": {
+    "build": "dotwear-generator generate android kit-android",
+    "test:android": "./gradlew testDebugUnitTest -Proborazzi.test.verify=true",
+    "test:android:device": "./gradlew :demo:connectedDebugAndroidTest"
+  },
+  "devDependencies": {
+    "@dotwear/generator": "workspace:*"
+  }
+}

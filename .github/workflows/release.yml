@@ -1,0 +1,138 @@
+# 公開（ADR-008・ADR-017・ADR-020）。
+#   - 手動で実行（workflow_dispatch）：既定は dry-run。何も公開せず、公開できる状態かだけを確かめる
+#   - タグ v<版番号> を push：本番の公開。タグとリポジトリ直下の package.json の version が一致しないと止める
+# 本番に必要な secrets（各アカウントを用意してから設定する）：
+#   NPM_TOKEN                                     npm の @dotwear 組織に公開できるトークン
+#   （Maven Central への公開は保留中。ADR-022。再開するときは、リポジトリの変数 PUBLISH_MAVEN を true にして次を設定する）
+#   MAVEN_CENTRAL_USERNAME / MAVEN_CENTRAL_PASSWORD  Maven Central（Central Portal）のトークン
+#   SIGNING_IN_MEMORY_KEY / SIGNING_IN_MEMORY_KEY_PASSWORD  Maven の成果物に署名する GPG の鍵
+#   SWIFT_REPO_DEPLOY_KEY                         dotwear-dev/dotwear-swift に push できるデプロイキー
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "dry-run（何も公開しない）"
+        type: boolean
+        default: true
+  push:
+    tags: ["v*"]
+
+env:
+  # タグの push のときだけ本番。手動実行は入力に従う
+  DRY_RUN: ${{ github.event_name == 'push' && 'false' || inputs.dry_run && 'true' || 'false' }}
+
+jobs:
+  version:
+    # 公開は公開用リポジトリからだけ行う（npm の provenance は公開リポジトリでないと作れず、package.json の repository とも一致させるため）。
+    # 開発用リポジトリでタグを push すると sync-public.yml が向こうに同じタグを付け、向こうのこのワークフローが公開する
+    if: github.repository == 'dotwear-dev/dotwear'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: v
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "push" ] && [ "${GITHUB_REF_NAME}" != "v$version" ]; then
+            echo "タグ ${GITHUB_REF_NAME} と package.json の version（$version）が一致しません。pnpm release:version で合わせてください"
+            exit 1
+          fi
+          echo "版番号: $version（dry-run: $DRY_RUN）"
+
+  npm:
+    needs: version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm の provenance（どのソースから作ったかの証明）に使う
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test
+      - name: Publish to npm
+        run: |
+          flags="--access public --no-git-checks"
+          if [ "$DRY_RUN" = "true" ]; then flags="$flags --dry-run"; fi
+          pnpm --filter @dotwear/icons --filter @dotwear/web publish $flags
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  maven:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v5
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:android
+      # Maven Central への公開は保留中（ADR-022）。リポジトリの変数 PUBLISH_MAVEN が true のときだけ本番の公開をする。
+      # それ以外は、本番のリリースでも Maven Local への試しの公開だけを行い、公開できる状態を保つ
+      - name: Publish to Maven Central
+        working-directory: packages/android
+        run: |
+          if [ "$DRY_RUN" = "true" ] || [ "${{ vars.PUBLISH_MAVEN }}" != "true" ]; then
+            ./gradlew :icons:publishToMavenLocal :compose:publishToMavenLocal
+          else
+            ./gradlew :icons:publishAndReleaseToMavenCentral :compose:publishAndReleaseToMavenCentral
+          fi
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
+
+  swift:
+    needs: version
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: brew install xcodegen
+      - run: pnpm test:swift
+      - name: Export the distribution package
+        run: |
+          if [ "$DRY_RUN" = "false" ]; then
+            mkdir -p ~/.ssh && echo "${{ secrets.SWIFT_REPO_DEPLOY_KEY }}" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+            git clone git@github.com:dotwear-dev/dotwear-swift.git "$RUNNER_TEMP/dotwear-swift"
+          fi
+          pnpm release:export-swift "$RUNNER_TEMP/dotwear-swift"
+      # 書き出したものが、モノレポなしの単体でビルドできることを確かめる（利用者の手元と同じ状態）
+      - name: Build the exported package on its own
+        working-directory: ${{ runner.temp }}/dotwear-swift
+        run: swift build
+      - name: Push and tag
+        if: env.DRY_RUN == 'false'
+        working-directory: ${{ runner.temp }}/dotwear-swift
+        run: |
+          version="${{ needs.version.outputs.version }}"
+          git config user.name "dotwear-release"
+          git config user.email "release@dotwear.dev"
+          git add -A
+          git commit -m "Release $version（dotwear-dev/dotwear ${GITHUB_SHA::7} から書き出し）"
+          git tag "$version"
+          git push origin HEAD --tags
