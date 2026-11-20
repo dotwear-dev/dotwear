@@ -136,3 +136,23 @@ jobs:
           git commit -m "Release $version（dotwear-dev/dotwear ${GITHUB_SHA::7} から書き出し）"
           git tag "$version"
           git push origin HEAD --tags
+
+  # GitHub の Releases に載せる（npm と Swift の公開が両方済んでから。片方でも失敗したら作らない）。
+  # 本文は docs/releases/v<版番号>.md（利用者向けに英語で書く）。なければ前のタグからのコミットの一覧だけになる
+  github-release:
+    needs: [version, npm, swift]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v${{ needs.version.outputs.version }}"
+          notes="docs/releases/$tag.md"
+          if [ -f "$notes" ]; then set -- --notes-file "$notes"; else set -- --generate-notes; fi
+          gh release create "$tag" --verify-tag --title "$tag" "$@"
+
