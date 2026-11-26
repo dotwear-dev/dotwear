@@ -1,6 +1,8 @@
 {
   "$schema": "https://turborepo.com/schema.json",
-  "extends": ["//"],
+  "extends": [
+    "//"
+  ],
   "tasks": {
     "build": {
       "inputs": [
@@ -12,15 +14,29 @@
         "$TURBO_ROOT$/apps/demo-react-native/doc-snippets/**",
         "$TURBO_ROOT$/apps/demo-flutter/doc_snippets/**"
       ],
-      "outputs": ["dist/**"]
+      "outputs": [
+        "dist/**"
+      ],
+      "env": [
+        "PUBLIC_DOTWEAR_*"
+      ]
     },
     "typecheck": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
     },
     "test:e2e": {
-      "dependsOn": ["build"],
-      "inputs": ["$TURBO_DEFAULT$"],
-      "outputs": ["playwright-report/**", "test-results/**"]
+      "dependsOn": [
+        "build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$"
+      ],
+      "outputs": [
+        "playwright-report/**",
+        "test-results/**"
+      ]
     }
   }
 }

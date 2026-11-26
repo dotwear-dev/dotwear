@@ -5,7 +5,7 @@ export type IconTier = "free" | "pro";
 
 /**
  * アイコンのプレフィックス（Font Awesome の fas・fal に当たる。byPrefixAndName.dw["save"] の dw）。
- * 意味（tier で分けるか、スタイルで分けるか）は未定なので、今は仮に tier で分けている。変えるときはここだけを直す
+ * tier で分ける（dw = Free、dwp = Pro。ADR-035 で確定）。変えるときはここだけを直す
  */
 export const ICON_PREFIXES: Readonly<Record<IconTier, string>> = { free: "dw", pro: "dwp" };
 

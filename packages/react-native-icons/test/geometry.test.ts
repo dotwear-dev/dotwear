@@ -9,12 +9,14 @@ const ICONS_DIR = path.resolve(__dirname, "../../../icons");
 
 interface IconSource {
   name: string;
+  tier: "free" | "pro";
   sizes: Partial<Record<string, string[]>>;
 }
 
-const sources: IconSource[] = readdirSync(ICONS_DIR).map(
-  (dir) => JSON.parse(readFileSync(path.join(ICONS_DIR, dir, "icon.json"), "utf8")) as IconSource,
-);
+// @dotwear/icons（Free のパッケージ）には Free のアイコンだけが入る（ADR-023）。Pro は Kit で検査する
+const sources: IconSource[] = readdirSync(ICONS_DIR)
+  .map((dir) => JSON.parse(readFileSync(path.join(ICONS_DIR, dir, "icon.json"), "utf8")) as IconSource)
+  .filter((icon) => icon.tier === "free");
 
 /** 矩形の並びを、元データと同じ文字列のマス目に戻す（重なりがあれば失敗させる） */
 function paint(def: DotwearIconDefinition, grid: DotwearIconGrid): string[] {

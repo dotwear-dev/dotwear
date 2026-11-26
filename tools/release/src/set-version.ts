@@ -9,6 +9,9 @@ import { findRepoRoot } from "./repo.js";
 /** npm に公開するパッケージ（版番号を書き写す先） */
 export const NPM_PACKAGES = ["packages/icons", "packages/web", "packages/react-native-icons", "packages/react-native"] as const;
 
+/** 認証付きのレジストリ（npm.dotwear.dev）でだけ配る Kit（ADR-036）。npm には公開しないが、版番号は全配布物とそろえる（ADR-020） */
+export const KIT_NPM_PACKAGES = ["packages/kit"] as const;
+
 /** pub.dev に公開するパッケージ（ADR-033）。pubspec.yaml の version と、仲間のパッケージへの依存の版を書き写す */
 export const PUB_PACKAGES = ["packages/flutter/dotwear_icons", "packages/flutter/dotwear"] as const;
 
@@ -51,7 +54,7 @@ export function replacePubspecVersion(yaml: string, version: string): string {
 export async function setVersion(root: string, version: string): Promise<string[]> {
   assertVersion(version);
   const changed: string[] = [];
-  for (const rel of ["package.json", ...NPM_PACKAGES.map((p) => `${p}/package.json`)]) {
+  for (const rel of ["package.json", ...[...NPM_PACKAGES, ...KIT_NPM_PACKAGES].map((p) => `${p}/package.json`)]) {
     const file = path.join(root, rel);
     await writeFile(file, replaceJsonVersion(await readFile(file, "utf8"), version));
     changed.push(rel);

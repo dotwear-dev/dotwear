@@ -22,6 +22,8 @@ export const PRIVATE_FILES = [
   "docs/05_repositories.md",
   // 公開用リポジトリへ書き出すワークフロー（非公開の開発用リポジトリでだけ動かす）
   ".github/workflows/sync-public.yml",
+  // 個人の GitHub Project に issue を追加するワークフロー（開発用リポジトリの issue だけを扱う）
+  ".github/workflows/add-issue-to-project.yml",
 ];
 
 /**
@@ -34,7 +36,8 @@ export const FORBIDDEN_TERMS = [
 ];
 
 /** この禁止語の検査から外すファイル（禁止語の一覧そのものと、そのテスト） */
-const GUARD_EXEMPT = ["tools/release/src/export-public.ts", "tools/release/test/"];
+// 特定商取引法に基づく表記（apps/docs-site/src/pages/pro/legal.astro）は、法律で決まった項目名（販売事業者・販売価格）を載せる必要があるので外す（ADR-037）
+const GUARD_EXEMPT = ["tools/release/src/export-public.ts", "tools/release/test/", "apps/docs-site/src/pages/pro/legal.astro"];
 
 /** テキストに含まれる禁止語を、行番号つきで返す */
 export function findForbidden(text: string, file: string): string[] {
@@ -49,7 +52,8 @@ export function findForbidden(text: string, file: string): string[] {
 const GUARD_EXT = new Set([".md", ".mdx", ".txt", ".ts", ".tsx", ".js", ".mjs", ".json", ".yml", ".yaml", ".swift", ".kt", ".kts", ".astro", ".css", ".html", ".toml", ".properties", ".dart"]);
 
 /** 丸ごと除くフォルダ：Kit（Free と Pro の全部。認証付きでだけ配る。ADR-023） */
-export const PRIVATE_DIRS = ["packages/kit/", "packages/swift-kit/", "packages/android/kit/"];
+// apps/pro-api は Pro の配布と販売の Worker（ADR-036）。契約者の扱いと販売の仕組みなので公開しない
+export const PRIVATE_DIRS = ["packages/kit/", "packages/swift-kit/", "packages/android/kit/", "apps/pro-api/"];
 
 /** 目印を取り除くテキストファイルの拡張子 */
 const TEXT_EXT = new Set([".md", ".mdx", ".txt"]);

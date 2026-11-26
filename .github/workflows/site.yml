@@ -33,6 +33,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo run build --filter=@dotwear/docs-site...
+        env:
+          # Dotwear Pro のページ（ADR-036・ADR-037）。リポジトリの Actions の変数で渡す。
+          # PUBLIC_DOTWEAR_PRO を 1 にするまで /pro/ は「準備中」。1 にするときは、特定商取引法に基づく表記の事業者（屋号と氏名）も要る
+          PUBLIC_DOTWEAR_PRO: ${{ vars.PUBLIC_DOTWEAR_PRO }}
+          PUBLIC_DOTWEAR_SELLER: ${{ vars.PUBLIC_DOTWEAR_SELLER }}
+          PUBLIC_DOTWEAR_SELLER_REPRESENTATIVE: ${{ vars.PUBLIC_DOTWEAR_SELLER_REPRESENTATIVE }}
       # 開発用の検査ページ（/dev/）はテストでだけ使うので、公開するサイトには含めない
       - run: rm -rf apps/docs-site/dist/dev
       - name: Deploy

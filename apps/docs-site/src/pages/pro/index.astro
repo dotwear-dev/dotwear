@@ -1,0 +1,121 @@
+---
+// Dotwear Pro の紹介・料金・入れ方（ADR-035・ADR-036）。
+// Kit（@dotwear/kit）は公開リポジトリにないので、ここのコード例はコンパイル済みのソースから取り出せない（ADR-025 の例外）。
+// API は @dotwear/icons と同じなので、Free のコード例の dw を dwp に変えた形だけを書く
+import CodeTabs from "../../components/CodeTabs.astro";
+import Base from "../../layouts/Base.astro";
+import { CONTACT_EMAIL, PRO_API, PRO_ENABLED, PRO_REGISTRY, REFUND_DAYS } from "../../lib/pro";
+
+const npmrc = `@dotwear:registry=${PRO_REGISTRY}/\n//${PRO_REGISTRY.replace(/^https?:\/\//, "")}/:_authToken=\${DOTWEAR_PRO_TOKEN}`;
+const usage = `import { byPrefixAndName } from "@dotwear/kit";
+import { DotwearIcon } from "@dotwear/icons/react";
+import "@dotwear/icons/palette.css";
+
+// Free icons keep working: dw. Pro icons: dwp.
+<DotwearIcon icon={byPrefixAndName.dw["save"]} />
+<DotwearIcon icon={byPrefixAndName.dwp["treasure-chest"]} scale={2} />`;
+---
+
+{
+  PRO_ENABLED ? (
+    <Base title="Dotwear Pro" description="More pixel-art icons for your apps, with new icons and updates while you subscribe.">
+      <article class="prose">
+        <h1>Dotwear Pro</h1>
+        <p class="lead">
+          Every Free icon, plus Pro icons for games, rewards and richer business apps. New icons and updates arrive
+          while you subscribe.
+        </p>
+
+        <h2>Pricing</h2>
+        <div class="pro-plans">
+          <section class="pro-plan" aria-labelledby="plan-solo">
+            <h3 id="plan-solo">Solo</h3>
+            <p class="pro-price"><strong>$49</strong> / year, tax included</p>
+            <ul>
+              <li>One developer</li>
+              <li>All Free and Pro icons in the Kit (<code>@dotwear/kit</code>)</li>
+              <li>New icons and updates while subscribed</li>
+              <li>Keep using every version released before your subscription ends</li>
+            </ul>
+            <p><a class="pixel-button" href={`${PRO_API}/checkout`}>Buy Solo</a></p>
+            <p>
+              By buying, you agree to the <a href="/pro/license/">Dotwear Pro License</a>.
+            </p>
+          </section>
+          <section class="pro-plan" aria-labelledby="plan-team">
+            <h3 id="plan-team">Team</h3>
+            <p class="pro-price">Coming soon</p>
+            <ul>
+              <li>Per-seat pricing for teams</li>
+            </ul>
+          </section>
+        </div>
+        <p>
+          Already subscribed? <a href={`${PRO_API}/login`}>Sign in</a> to get a new token, update your payment method or
+          cancel.
+        </p>
+
+        <h2>Install the Kit</h2>
+        <p>
+          After you buy, you get a token. Point the <code>@dotwear</code> scope at the Dotwear registry in
+          <code>.npmrc</code>. Keep the token out of your repository: set it as an environment variable, here
+          <code>DOTWEAR_PRO_TOKEN</code>.
+        </p>
+        <CodeTabs label=".npmrc" items={[{ platform: "web", lang: "sh", code: npmrc }]} />
+        <CodeTabs label="Install" items={[{ platform: "web", lang: "sh", code: "npm install @dotwear/kit" }]} />
+        <p>
+          The Kit has the same API as <code>@dotwear/icons</code>. Switch the prefix from <code>dw</code> to
+          <code>dwp</code> to use a Pro icon.
+        </p>
+        <CodeTabs label="Use a Pro icon" items={[{ platform: "web", code: usage }]} />
+        <p>
+          The Kit is for the web (React) first. SwiftUI, Android, React Native and Flutter will follow; your
+          subscription covers them when they arrive.
+        </p>
+
+        <h2>Questions</h2>
+        <h3>What happens if I cancel?</h3>
+        <p>
+          You can keep using, and reinstall, every Kit version released before your subscription ended. New versions
+          are for active subscribers.
+        </p>
+        <h3>Do Free icons change?</h3>
+        <p>No. Everything released as Free stays Free under the MIT license.</p>
+        <h3>How do I pay?</h3>
+        <p>Payments and invoices are handled by Stripe.</p>
+        <h3>Can I get a refund?</h3>
+        <p>
+          Yes. Email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> within {REFUND_DAYS} days of your purchase
+          for a full refund.
+        </p>
+        <p>
+          <a href="/pro/license/">Dotwear Pro License</a> · <a href="/pro/legal/">Legal notice</a>
+        </p>
+      </article>
+    </Base>
+  ) : (
+    <Base title="Dotwear Pro" description="Dotwear Pro is coming soon." noindex>
+      <article class="prose">
+        <h1>Dotwear Pro</h1>
+        <p>Dotwear Pro is coming soon.</p>
+      </article>
+    </Base>
+  )
+}
+
+<style>
+  /* 線と間隔はドットの整数倍にする（global.css の --dot・--border） */
+  .pro-plans {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: calc(4 * var(--dot));
+  }
+  .pro-plan {
+    border: var(--border) solid var(--dw-color-border);
+    padding: 0 calc(4 * var(--dot)) calc(2 * var(--dot));
+  }
+  /* DotGothic16 は 16px の整数倍で使う（ADR-026） */
+  .pro-price strong {
+    font-size: 32px;
+  }
+</style>

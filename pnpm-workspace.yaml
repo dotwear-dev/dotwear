@@ -6,5 +6,7 @@ packages:
 # インストール時のビルドスクリプトを許可する依存（tsx / vitest が使う esbuild）
 allowBuilds:
   esbuild: true
+  # wrangler（apps/pro-api）が使う Cloudflare の Workers のランタイム。インストール時に手元の OS 用のバイナリを確かめる
+  workerd: true
   # Jest（jest-haste-map）の watch 用のファイル監視。jest --watch は使わないので、ネイティブのビルドは走らせない
   "@parcel/watcher": false

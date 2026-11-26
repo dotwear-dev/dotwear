@@ -1,0 +1,67 @@
+---
+// 特定商取引法に基づく表記（ADR-037）。日本の法律の表示なので、このページだけ日本語で書く（英語の要約を添える）。
+// 事業者の屋号と氏名はリポジトリに書かず、ビルドのときの環境変数で渡す（src/lib/pro.ts）。
+// 住所と電話番号は、請求があれば遅滞なく開示する（ページには載せない）
+import Base from "../../layouts/Base.astro";
+import { CONTACT_EMAIL, PRO_ENABLED, REFUND_DAYS, SELLER, SELLER_REPRESENTATIVE } from "../../lib/pro";
+
+const ROWS: [string, string][] = [
+  ["販売事業者", SELLER],
+  ["運営統括責任者", SELLER_REPRESENTATIVE],
+  ["所在地", "請求があった場合には、遅滞なく開示いたします。"],
+  ["電話番号", "請求があった場合には、遅滞なく開示いたします。"],
+  ["メールアドレス", CONTACT_EMAIL],
+  ["販売価格", "Dotwear Pro Solo：年 49 米ドル（税込。購入ページに表示）"],
+  ["商品代金以外の必要料金", "インターネットの接続料金・通信料金。カード会社による外貨の換算手数料がかかる場合があります。"],
+  ["支払方法", "クレジットカードなど（決済は Stripe が行います）"],
+  ["支払時期", "購入時に 1 年分をお支払いいただきます。以後、解約されるまで毎年同じ日に自動で更新され、請求されます。"],
+  ["商品の引渡時期", "決済が完了した直後に、購入完了のページでアクセス用のトークンをお渡しします。"],
+  [
+    "返品・返金・解約",
+    `デジタル商品のため返品はできません。ただし、購入から ${REFUND_DAYS} 日以内に ${CONTACT_EMAIL} までご連絡いただいた場合は、理由を問わず全額を返金します（返金後はトークンが使えなくなります）。解約はアカウントのページからいつでもでき、次の更新日から請求されません。解約後も、契約が終わるまでに出た版は引き続き使えます。`,
+  ],
+  ["動作環境", "npm でパッケージを入れられる Web（React 18 以上）の開発環境"],
+];
+---
+
+{
+  PRO_ENABLED ? (
+    <Base title="Legal notice" description="Legal notice for Dotwear Pro under the Japanese Act on Specified Commercial Transactions.">
+      <article class="prose">
+        <h1>Legal notice</h1>
+        <p>
+          This page is the disclosure required by the Japanese Act on Specified Commercial Transactions. It is written in
+          Japanese. For the license, see the <a href="/pro/license/">Dotwear Pro License</a>.
+        </p>
+        <section lang="ja">
+          <h2>特定商取引法に基づく表記</h2>
+          <dl class="legal">
+            {ROWS.map(([k, v]) => (
+              <>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </>
+            ))}
+          </dl>
+        </section>
+      </article>
+    </Base>
+  ) : (
+    <Base title="Legal notice" description="Dotwear Pro is coming soon." noindex>
+      <article class="prose">
+        <h1>Legal notice</h1>
+        <p>Dotwear Pro is coming soon.</p>
+      </article>
+    </Base>
+  )
+}
+
+<style>
+  .legal dt {
+    font-weight: bold;
+    margin-top: calc(4 * var(--dot));
+  }
+  .legal dd {
+    margin-left: 0;
+  }
+</style>

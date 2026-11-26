@@ -12,6 +12,10 @@ export default defineConfig({
   integrations: [
     react(),
     // 開発用の検査ページ（/dev/）と 404 はサイトマップに載せない（/dev/ は公開するサイトからも消す。site.yml）
-    sitemap({ filter: (page) => !page.includes("/dev/") && !page.endsWith("/404/") }),
+    // /pro/ 以下は売り出すまで「準備中」で検索に載せないので、PUBLIC_DOTWEAR_PRO=1 のときだけ載せる（src/lib/pro.ts）
+    sitemap({
+      filter: (page) =>
+        !page.includes("/dev/") && !page.endsWith("/404/") && (process.env.PUBLIC_DOTWEAR_PRO === "1" || !page.includes("/pro/")),
+    }),
   ],
 });

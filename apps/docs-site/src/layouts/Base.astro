@@ -10,6 +10,7 @@ import "../styles/global.css";
 import logo from "../../../../generated/brand/dotwear-24.svg?raw";
 import { tokens } from "@dotwear/web";
 import { COMPONENTS } from "../data/components";
+import { PRO_ENABLED } from "../lib/pro";
 
 interface Props {
   title: string;
@@ -91,6 +92,7 @@ const current = Astro.url.pathname;
       <nav aria-label="Site">
         <a href="/getting-started/">Docs</a>
         <a href="/icons/">Icons</a>
+        {PRO_ENABLED && <a href="/pro/">Pro</a>}
         <a href="https://github.com/dotwear-dev/dotwear">GitHub</a>
       </nav>
     </header>

@@ -1,0 +1,104 @@
+---
+// Dotwear Pro のライセンス（ADR-037）。範囲は Font Awesome Pro と同じくらい：
+// 商用でも作るものの数に制限なし・クレジット不要。素材として配り直したり売り直したりすることと、Dotwear と同じ種類の製品に使うことは禁止。1 席 1 人。
+// 法的な助言を受けて書いたものではない。売り出す前にメンテナーが確かめる
+import Base from "../../layouts/Base.astro";
+import { CONTACT_EMAIL, PRO_ENABLED, REFUND_DAYS } from "../../lib/pro";
+const UPDATED = "2026-11-26";
+---
+
+{
+  PRO_ENABLED ? (
+    <Base title="Dotwear Pro License" description="What you can do with Dotwear Pro icons and the Kit.">
+      <article class="prose">
+        <h1>Dotwear Pro License</h1>
+        <p>Last updated: {UPDATED}</p>
+        <p>
+          This license covers the Pro assets of Dotwear. Free icons, components and code stay under the MIT license and
+          are not affected by this page.
+        </p>
+
+        <h2>1. Definitions</h2>
+        <ul>
+          <li><strong>Pro assets:</strong> the icons marked Pro and any other material that is only available in the Kit (<code>@dotwear/kit</code> and its counterparts for other platforms).</li>
+          <li><strong>Subscription:</strong> a paid Dotwear Pro plan, such as Solo.</li>
+          <li><strong>Seat:</strong> one named person. Solo includes one seat.</li>
+          <li><strong>End product:</strong> something you make that uses Pro assets as part of a larger work: an app, a website, software, a game, a document or a presentation.</li>
+        </ul>
+
+        <h2>2. What you can do</h2>
+        <p>
+          While your subscription is active, each seat may use Pro assets to design, build and ship any number of end
+          products, for personal or commercial use, for yourself or for clients. Attribution is not required. You may
+          modify Pro assets inside your end products.
+        </p>
+
+        <h2>3. After your subscription ends</h2>
+        <p>
+          You may keep using, and reinstall, every Kit version released before your subscription ended, with no time
+          limit, in existing and new end products. New versions require an active subscription.
+        </p>
+
+        <h2>4. What you cannot do</h2>
+        <ul>
+          <li>Redistribute or sell Pro assets on their own or as assets, for example as an icon pack, a font, a design kit, a template or a library that others can use to get the icons.</li>
+          <li>Use Pro assets to build a product that competes with Dotwear, such as another icon set or design system.</li>
+          <li>Share your token, or let more people use the Kit than you have seats.</li>
+          <li>Use Pro assets in a trademark, a logo or a brand identity.</li>
+        </ul>
+        <p>
+          Shipping the Kit inside your end product's build (for example a bundled web app or a compiled mobile app) is
+          fine, as long as the icons are not offered for others to reuse.
+        </p>
+
+        <h2>5. Refunds</h2>
+        <p>
+          If Dotwear Pro is not right for you, email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> within
+          {REFUND_DAYS} days of your purchase for a full refund. After a refund, the license ends and your token stops
+          working.
+        </p>
+
+        <h2>6. Ownership</h2>
+        <p>Dotwear keeps all rights to the Pro assets. This license does not transfer ownership.</p>
+
+        <h2>7. No warranty</h2>
+        <p>
+          Pro assets are provided "as is", without warranty of any kind, to the extent permitted by law.
+        </p>
+
+        <h2>8. Limitation of liability</h2>
+        <p>
+          To the extent permitted by law, Dotwear's total liability is limited to the fees you paid in the 12 months
+          before the claim.
+        </p>
+
+        <h2>9. Termination</h2>
+        <p>
+          If you break this license, it ends and your token may be revoked. Sections 4, 6, 7 and 8 continue to apply.
+        </p>
+
+        <h2>10. Changes</h2>
+        <p>
+          We may update this license. Changes apply to versions released after the change; the license you accepted
+          continues to cover the versions you already have.
+        </p>
+
+        <h2>11. Governing law</h2>
+        <p>
+          This license is governed by the laws of Japan. The Tokyo District Court has exclusive jurisdiction as the
+          court of first instance.
+        </p>
+
+        <h2>Contact</h2>
+        <p><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+      </article>
+    </Base>
+  ) : (
+    <Base title="Dotwear Pro License" description="Dotwear Pro is coming soon." noindex>
+      <article class="prose">
+        <h1>Dotwear Pro License</h1>
+        <p>Dotwear Pro is coming soon.</p>
+      </article>
+    </Base>
+  )
+}
