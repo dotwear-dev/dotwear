@@ -15,6 +15,9 @@ export const KIT_NPM_PACKAGES = ["packages/kit"] as const;
 /** pub.dev に公開するパッケージ（ADR-033）。pubspec.yaml の version と、仲間のパッケージへの依存の版を書き写す */
 export const PUB_PACKAGES = ["packages/flutter/dotwear_icons", "packages/flutter/dotwear"] as const;
 
+/** トークン付きの pub のレジストリ（pub.dotwear.dev）でだけ配る Flutter の Kit（ADR-039）。版番号は全配布物とそろえる */
+export const KIT_PUB_PACKAGES = ["packages/flutter-kit"] as const;
+
 /** PUB_PACKAGES のパッケージ名（依存の版をそろえる相手） */
 const PUB_NAMES = ["dotwear_icons", "dotwear"] as const;
 
@@ -59,7 +62,7 @@ export async function setVersion(root: string, version: string): Promise<string[
     await writeFile(file, replaceJsonVersion(await readFile(file, "utf8"), version));
     changed.push(rel);
   }
-  for (const dir of PUB_PACKAGES) {
+  for (const dir of [...PUB_PACKAGES, ...KIT_PUB_PACKAGES]) {
     const rel = `${dir}/pubspec.yaml`;
     const file = path.join(root, rel);
     await writeFile(file, replacePubspecVersion(await readFile(file, "utf8"), version));

@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { androidKitOutDirs, androidOutDirs, emitAndroid, emitAndroidKit } from "../src/emit/android.js";
+import { dartOutDirs, emitDart, emitDartKit } from "../src/emit/dart.js";
 import { ICON_PREFIXES } from "../src/emit/naming.js";
 import { emitSwift, emitSwiftKit, swiftKitOutDirs, swiftOutDirs } from "../src/emit/swift.js";
 import { emitWeb } from "../src/emit/web.js";
@@ -77,5 +78,21 @@ describe("Android", () => {
     expect(kit).toContain("val SecretCrown: DotwearIconDefinition by lazy {");
     expect(kit).toContain("val DotwearIcons.Pro: DotwearProIcons get() = DotwearProIcons");
     expect(kit).not.toContain('name = "save"');
+  });
+});
+
+describe("Flutter", () => {
+  it("公開の dotwear_icons は Free だけ。Kit（dotwear_kit）は Pro を DotwearProIcons に出す", async () => {
+    const d = await tmp();
+    await emitDart({ icons: ICONS, palette, packageDir: d });
+    expect(await readAll(dartOutDirs(d).sources)).not.toMatch(PRO_NAMES);
+    expect(await readAll(dartOutDirs(d).tests)).not.toMatch(PRO_NAMES);
+    const k = await tmp();
+    await emitDartKit({ icons: ICONS, palette, packageDir: k });
+    const kit = await readAll(dartOutDirs(k).sources);
+    expect(kit).toContain("abstract final class DotwearProIcons {");
+    expect(kit).toContain("static const secretCrown = DotwearIconDefinition(");
+    // Kit に Free のアイコンを二重に出さない（Free は依存先の dotwear_icons にある）
+    expect(kit).not.toContain('name: "save"');
   });
 });

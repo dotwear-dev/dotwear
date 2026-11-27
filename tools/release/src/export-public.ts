@@ -53,7 +53,7 @@ const GUARD_EXT = new Set([".md", ".mdx", ".txt", ".ts", ".tsx", ".js", ".mjs", 
 
 /** 丸ごと除くフォルダ：Kit（Free と Pro の全部。認証付きでだけ配る。ADR-023） */
 // apps/pro-api は Pro の配布と販売の Worker（ADR-036）。契約者の扱いと販売の仕組みなので公開しない
-export const PRIVATE_DIRS = ["packages/kit/", "packages/swift-kit/", "packages/android/kit/", "apps/pro-api/"];
+export const PRIVATE_DIRS = ["packages/kit/", "packages/swift-kit/", "packages/android/kit/", "packages/flutter-kit/", "apps/pro-api/"];
 
 /** 目印を取り除くテキストファイルの拡張子 */
 const TEXT_EXT = new Set([".md", ".mdx", ".txt"]);

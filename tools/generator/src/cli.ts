@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { emitAndroid, emitAndroidKit } from "./emit/android.js";
 import { emitBrand, loadBrandColor } from "./emit/brand.js";
-import { emitDart } from "./emit/dart.js";
+import { emitDart, emitDartKit } from "./emit/dart.js";
 import { emitAndroidFonts, emitDartFonts, emitFonts, emitReactNativeFonts, emitWebFonts } from "./emit/fonts.js";
 import { emitSiteIcons, loadSiteColors } from "./emit/site-icons.js";
 import { emitSwift, emitSwiftKit } from "./emit/swift.js";
@@ -36,7 +36,7 @@ async function runValidate(): Promise<number> {
 
 // 出力の対象。パッケージの build からは自分の分だけを指定する。
 // turbo は icons と web の build を並列に走らせるので、同じ出力先を 2 つのプロセスが同時に作り直さないようにするため
-const TARGETS = ["icons", "tokens", "brand", "swift", "android", "react-native", "flutter", "kit-web", "kit-swift", "kit-android"] as const;
+const TARGETS = ["icons", "tokens", "brand", "swift", "android", "react-native", "flutter", "kit-web", "kit-swift", "kit-android", "kit-dart"] as const;
 type Target = (typeof TARGETS)[number];
 
 // 元データから各プラットフォームの生成物を出力する。
@@ -47,8 +47,8 @@ async function runGenerate(args: string[]): Promise<number> {
     console.error(`不明な出力対象: ${unknown.join(", ")}（使えるのは ${TARGETS.join(" / ")}）`);
     return 2;
   }
-  // "kit" は Kit の 3 つ（kit-web・kit-swift・kit-android）をまとめた書き方
-  const expanded = args.flatMap((a) => (a === "kit" ? ["kit-web", "kit-swift", "kit-android"] : [a]));
+  // "kit" は Kit の 4 つ（kit-web・kit-swift・kit-android・kit-dart）をまとめた書き方
+  const expanded = args.flatMap((a) => (a === "kit" ? ["kit-web", "kit-swift", "kit-android", "kit-dart"] : [a]));
   const targets = new Set<Target>(expanded.length ? (expanded as Target[]) : TARGETS);
 
   const root = findRepoRoot(process.cwd());
@@ -132,7 +132,7 @@ async function runGenerate(args: string[]): Promise<number> {
     await emitDartFonts({ root, outDir: path.join(uiDir, "fonts") });
     console.log(`✔ デザイントークンとフォントを ${rel(uiDir)}/ に出力しました`);
   }
-  if (targets.has("kit-web") || targets.has("kit-swift") || targets.has("kit-android")) {
+  if (targets.has("kit-web") || targets.has("kit-swift") || targets.has("kit-android") || targets.has("kit-dart")) {
     // Kit（Free と Pro の全部が入る認証付きのパッケージ。ADR-023）。
     // Kit のパッケージは非公開のリポジトリにだけあるので、フォルダがないプラットフォームは飛ばす
     const icons = await loadIcons(path.join(root, "icons"));
@@ -140,6 +140,7 @@ async function runGenerate(args: string[]): Promise<number> {
     const kitWeb = path.join(root, "packages", "kit");
     const kitSwift = path.join(root, "packages", "swift-kit");
     const android = path.join(root, "packages", "android");
+    const kitDart = path.join(root, "packages", "flutter-kit");
     const done: string[] = [];
     if (targets.has("kit-web") && existsSync(kitWeb)) {
       await emitWeb({ icons, palette, outDir: path.join(kitWeb, "generated"), tiers: ["free", "pro"], typesImport: "@dotwear/icons" });
@@ -152,6 +153,10 @@ async function runGenerate(args: string[]): Promise<number> {
     if (targets.has("kit-android") && existsSync(path.join(android, "kit"))) {
       await emitAndroidKit({ icons, palette, projectDir: android });
       done.push(rel(path.join(android, "kit")));
+    }
+    if (targets.has("kit-dart") && existsSync(kitDart)) {
+      await emitDartKit({ icons, palette, packageDir: kitDart });
+      done.push(rel(kitDart));
     }
     const pro = icons.filter((i) => i.tier === "pro").length;
     console.log(done.length ? `✔ Kit（Pro のアイコン ${pro} 個）を ${done.join("・")} に出力しました` : "Kit のパッケージがないので飛ばしました");
@@ -169,7 +174,7 @@ async function main(): Promise<void> {
       process.exitCode = await runGenerate(args);
       return;
     default:
-      console.error(`使い方: dotwear-generator validate | generate [icons] [tokens] [brand] [swift] [android] [react-native] [flutter] [kit | kit-web kit-swift kit-android]\n不明なコマンド: ${command ?? "(なし)"}`);
+      console.error(`使い方: dotwear-generator validate | generate [icons] [tokens] [brand] [swift] [android] [react-native] [flutter] [kit | kit-web kit-swift kit-android kit-dart]\n不明なコマンド: ${command ?? "(なし)"}`);
       process.exitCode = 2;
   }
 }

@@ -14,6 +14,21 @@ import "@dotwear/icons/palette.css";
 // Free icons keep working: dw. Pro icons: dwp.
 <DotwearIcon icon={byPrefixAndName.dw["save"]} />
 <DotwearIcon icon={byPrefixAndName.dwp["treasure-chest"]} scale={2} />`;
+// React Native：Kit の定義を @dotwear/react-native-icons の DotwearIcon にそのまま渡す（ADR-039）
+// Flutter：dotwear_kit（pub.dotwear.dev）。Pro のアイコンは DotwearProIcons（ADR-039）
+const pubToken = "dart pub token add https://pub.dotwear.dev\n# Paste your Dotwear Pro token when asked";
+const pubspec = `dependencies:
+  dotwear_kit:
+    hosted: https://pub.dotwear.dev
+    version: ^0.2.1`;
+const usageFlutter = `import 'package:dotwear_kit/dotwear_kit.dart';
+
+DotwearIcon(DotwearIcons.save)                        // Free icons keep working
+DotwearIcon(DotwearProIcons.treasureChest, scale: 2)  // Pro icons`;
+const usageRn = `import { byPrefixAndName } from "@dotwear/kit";
+import { DotwearIcon } from "@dotwear/react-native-icons";
+
+<DotwearIcon icon={byPrefixAndName.dwp["treasure-chest"]} scale={2} />`;
 ---
 
 {
@@ -62,15 +77,29 @@ import "@dotwear/icons/palette.css";
           <code>DOTWEAR_PRO_TOKEN</code>.
         </p>
         <CodeTabs label=".npmrc" items={[{ platform: "web", lang: "sh", code: npmrc }]} />
-        <CodeTabs label="Install" items={[{ platform: "web", lang: "sh", code: "npm install @dotwear/kit" }]} />
+        <CodeTabs
+          label="Install"
+          items={[
+            { platform: "web", lang: "sh", code: "npm install @dotwear/kit" },
+            { platform: "react-native", lang: "sh", code: "npm install @dotwear/kit @dotwear/react-native-icons" },
+            { platform: "flutter", lang: "yaml", note: "Flutter uses its own registry. Register your token once, then add the Kit to pubspec.yaml:", code: `${pubToken}\n\n# pubspec.yaml\n${pubspec}` },
+          ]}
+        />
         <p>
           The Kit has the same API as <code>@dotwear/icons</code>. Switch the prefix from <code>dw</code> to
           <code>dwp</code> to use a Pro icon.
         </p>
-        <CodeTabs label="Use a Pro icon" items={[{ platform: "web", code: usage }]} />
+        <CodeTabs
+          label="Use a Pro icon"
+          items={[
+            { platform: "web", code: usage },
+            { platform: "react-native", code: usageRn },
+            { platform: "flutter", code: usageFlutter },
+          ]}
+        />
         <p>
-          The Kit is for the web (React) first. SwiftUI, Android, React Native and Flutter will follow; your
-          subscription covers them when they arrive.
+          The Kit works with React, React Native and Flutter today. SwiftUI is next, then Android; your subscription
+          covers them when they arrive.
         </p>
 
         <h2>Questions</h2>
