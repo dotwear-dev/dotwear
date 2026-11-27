@@ -1,6 +1,6 @@
 {
   "name": "@dotwear/react-native-icons",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Pixel-perfect pixel-art icons for React Native (crisp on fractional screen densities)",
   "keywords": [
     "icons",

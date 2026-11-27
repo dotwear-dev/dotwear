@@ -1,6 +1,6 @@
 {
   "name": "@dotwear/react-native",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Dotwear UI for React Native: design tokens, theme, bundled pixel font (re-exports @dotwear/react-native-icons)",
   "keywords": [
     "design-system",

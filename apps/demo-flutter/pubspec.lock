@@ -55,14 +55,14 @@ packages:
       path: "../../packages/flutter/dotwear"
       relative: true
     source: path
-    version: "0.2.0"
+    version: "0.2.1"
   dotwear_icons:
     dependency: "direct overridden"
     description:
       path: "../../packages/flutter/dotwear_icons"
       relative: true
     source: path
-    version: "0.2.0"
+    version: "0.2.1"
   fake_async:
     dependency: transitive
     description:

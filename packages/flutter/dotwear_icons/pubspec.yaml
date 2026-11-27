@@ -1,6 +1,6 @@
 name: dotwear_icons
 description: Pixel-art icons for Flutter. Each cell is drawn on whole device pixels, so edges stay crisp even at 2.625x. Part of the Dotwear design system.
-version: 0.2.0
+version: 0.2.1
 homepage: https://dotwear.dev
 repository: https://github.com/dotwear-dev/dotwear/tree/main/packages/flutter/dotwear_icons
 issue_tracker: https://github.com/dotwear-dev/dotwear/issues

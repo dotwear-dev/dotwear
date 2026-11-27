@@ -1,6 +1,6 @@
 name: dotwear
 description: Pixel-art UI for Flutter business apps. Buttons, text fields, cards and toggles styled on top of the standard widgets, with design tokens and a bundled pixel font. Part of the Dotwear design system.
-version: 0.2.0
+version: 0.2.1
 homepage: https://dotwear.dev
 repository: https://github.com/dotwear-dev/dotwear/tree/main/packages/flutter/dotwear
 issue_tracker: https://github.com/dotwear-dev/dotwear/issues
@@ -19,7 +19,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  dotwear_icons: ^0.2.0
+  dotwear_icons: ^0.2.1
   # Flutter 3.47 から Material の部品は SDK の外の material_ui に移った（package:flutter/material.dart は非推奨）
   material_ui: ^1.5.0
 
