@@ -25,6 +25,21 @@ const usageFlutter = `import 'package:dotwear_kit/dotwear_kit.dart';
 
 DotwearIcon(DotwearIcons.save)                        // Free icons keep working
 DotwearIcon(DotwearProIcons.treasureChest, scale: 2)  // Pro icons`;
+// SwiftUI：DotwearKit（swift.dotwear.dev の Swift Package Registry）。Pro のアイコンは .pro（ADR-039）
+const swiftSetup = `swift package-registry set https://swift.dotwear.dev --scope dotwear
+swift package-registry login https://swift.dotwear.dev --token <your-token>`;
+const swiftPackage = `dependencies: [
+    .package(id: "dotwear.kit", from: "0.2.1"),
+],
+targets: [
+    .target(name: "MyApp", dependencies: [
+        .product(name: "DotwearKit", package: "dotwear.kit"),
+    ]),
+]`;
+const usageSwift = `import DotwearKit
+
+DotwearIcon(.save)                        // Free icons keep working
+DotwearIcon(.pro.treasureChest, scale: 2) // Pro icons`;
 const usageRn = `import { byPrefixAndName } from "@dotwear/kit";
 import { DotwearIcon } from "@dotwear/react-native-icons";
 
@@ -82,6 +97,7 @@ import { DotwearIcon } from "@dotwear/react-native-icons";
           items={[
             { platform: "web", lang: "sh", code: "npm install @dotwear/kit" },
             { platform: "react-native", lang: "sh", code: "npm install @dotwear/kit @dotwear/react-native-icons" },
+            { platform: "swift", lang: "sh", note: "Swift uses a package registry. Set it up once, then add the Kit by its identifier in Package.swift:", code: `${swiftSetup}\n\n// Package.swift\n${swiftPackage}` },
             { platform: "flutter", lang: "yaml", note: "Flutter uses its own registry. Register your token once, then add the Kit to pubspec.yaml:", code: `${pubToken}\n\n# pubspec.yaml\n${pubspec}` },
           ]}
         />
@@ -94,12 +110,13 @@ import { DotwearIcon } from "@dotwear/react-native-icons";
           items={[
             { platform: "web", code: usage },
             { platform: "react-native", code: usageRn },
+            { platform: "swift", code: usageSwift },
             { platform: "flutter", code: usageFlutter },
           ]}
         />
         <p>
-          The Kit works with React, React Native and Flutter today. SwiftUI is next, then Android; your subscription
-          covers them when they arrive.
+          The Kit works with React, React Native, SwiftUI and Flutter. Android will follow; your subscription covers it
+          when it arrives.
         </p>
 
         <h2>Questions</h2>
